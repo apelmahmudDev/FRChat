@@ -106,54 +106,63 @@ export default function ConversationList() {
 
   return (
     <aside className="hidden w-[350px] shrink-0 flex-col border-r bg-card lg:flex">
-      <div className="flex h-[82px] items-center gap-4 border-b px-5">
-        <div className="flex shrink-0 items-center gap-2.5">
-          <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <MessageCircleMore className="size-5" />
-          </span>
-          <span className="text-xl font-bold tracking-tight">FRChat</span>
+      <div className="space-y-3 border-b px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <MessageCircleMore className="size-5" />
+            </span>
+            <span className="text-xl font-bold tracking-tight">FRChat</span>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Filter conversations"
+              className="ml-auto flex size-10 shrink-0 items-center justify-center rounded-full bg-muted transition hover:bg-muted/80 data-popup-open:bg-primary/10 data-popup-open:text-primary"
+            >
+              <SlidersHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={8}
+              className="w-56 p-2"
+            >
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold text-foreground">
+                  Filter conversations
+                </DropdownMenuLabel>
+                {filters.map((filter) => (
+                  <DropdownMenuItem
+                    key={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className="h-9 px-2.5"
+                  >
+                    <span>
+                      {filter === "All" ? "All conversations" : filter}
+                    </span>
+                    {activeFilter === filter && (
+                      <Check className="ml-auto size-4 text-primary" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="h-9 px-2.5 text-primary">
+                <MessageSquarePlus className="size-4" />
+                New conversation
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <label className="ml-auto flex h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border bg-background px-3 shadow-xs focus-within:ring-2 focus-within:ring-primary/15">
+
+        <label className="flex h-10 w-full items-center gap-2 rounded-full bg-muted px-3.5 focus-within:ring-2 focus-within:ring-primary/15">
           <Search className="size-4 shrink-0 text-muted-foreground" />
           <input
             type="search"
             placeholder="Search conversations"
             aria-label="Search conversations"
-            className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </label>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label="Filter conversations"
-            className="flex size-11 shrink-0 items-center justify-center rounded-xl border bg-background transition hover:bg-muted data-popup-open:bg-muted"
-          >
-            <SlidersHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={8} className="w-56 p-2">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="px-2 py-2 text-xs font-semibold text-foreground">
-                Filter conversations
-              </DropdownMenuLabel>
-              {filters.map((filter) => (
-                <DropdownMenuItem
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className="h-9 px-2.5"
-                >
-                  <span>{filter === "All" ? "All conversations" : filter}</span>
-                  {activeFilter === filter && (
-                    <Check className="ml-auto size-4 text-primary" />
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="h-9 px-2.5 text-primary">
-              <MessageSquarePlus className="size-4" />
-              New conversation
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       <nav className="flex h-16 items-center gap-1 border-b px-5 text-xs font-medium">
@@ -169,7 +178,7 @@ export default function ConversationList() {
         ))}
       </nav>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-1">
+      <div className="min-h-0 flex-1 overflow-y-auto px-1 pt-3 pb-1">
         {filteredConversations.map((conversation, index) => (
           <button
             type="button"
