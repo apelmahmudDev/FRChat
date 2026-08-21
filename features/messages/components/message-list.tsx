@@ -1,5 +1,7 @@
 import { CheckCheck, Download, FileText, Play, ThumbsUp } from "lucide-react"
 
+import { IconTooltip } from "@/components/ui/icon-tooltip"
+
 function Avatar({ initials, color }: { initials: string; color: string }) {
   return (
     <span
@@ -95,13 +97,15 @@ export default function MessageList() {
               <span className="text-muted-foreground">10:24 AM</span>
             </div>
             <div className="flex min-w-[260px] items-center gap-3 rounded-2xl rounded-tl-md border bg-card p-3 shadow-xs sm:min-w-[360px]">
-              <button
-                type="button"
-                aria-label="Play voice message"
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
-              >
-                <Play className="ml-0.5 size-4 fill-current" />
-              </button>
+              <IconTooltip label="Play voice message" side="top">
+                <button
+                  type="button"
+                  aria-label="Play voice message"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                >
+                  <Play className="ml-0.5 size-4 fill-current" />
+                </button>
+              </IconTooltip>
               <div
                 className="flex h-6 flex-1 items-center gap-0.5 overflow-hidden"
                 aria-hidden="true"

@@ -1,5 +1,5 @@
-import ChatView from "@/features/messages/components/chat-view"
+import { redirect } from "next/navigation"
 
 export default function MessagesPage() {
-  return <ChatView />
+  redirect("/messages/1")
 }

@@ -12,6 +12,9 @@ import {
   X,
 } from "lucide-react"
 
+import type { Conversation } from "@/features/messages/data/conversations"
+import { IconTooltip } from "@/components/ui/icon-tooltip"
+
 const actions = [
   { label: "Members", icon: Users },
   { label: "Files", icon: FileText },
@@ -23,35 +26,42 @@ const actions = [
 const members = ["SB", "MO", "LC", "JP", "EB"]
 
 type InfoPanelProps = {
+  conversation: Conversation
   onClose: () => void
 }
 
-export default function InfoPanel({ onClose }: InfoPanelProps) {
+export default function InfoPanel({ conversation, onClose }: InfoPanelProps) {
   return (
     <aside className="absolute inset-y-0 right-0 z-30 flex w-[min(310px,90vw)] shrink-0 flex-col border-l bg-card shadow-xl 2xl:static 2xl:w-[310px] 2xl:shadow-none">
       <div className="flex h-[82px] items-center justify-between border-b px-6">
         <h2 className="text-sm font-semibold">About this conversation</h2>
-        <button
-          type="button"
-          aria-label="Close information panel"
-          onClick={onClose}
-          className="flex size-8 items-center justify-center rounded-full transition hover:bg-muted"
-        >
-          <X className="size-4" />
-        </button>
+        <IconTooltip label="Close details" side="left">
+          <button
+            type="button"
+            aria-label="Close information panel"
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-full transition hover:bg-muted"
+          >
+            <X className="size-4" />
+          </button>
+        </IconTooltip>
       </div>
 
       <div className="border-b px-6 py-6">
         <div className="flex items-center gap-3">
           <div className="flex size-14 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-800">
-            PT
+            {conversation.initials}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="font-semibold">Product Team</h3>
-              <Sprout className="size-4 text-primary" />
+              <h3 className="font-semibold">{conversation.name}</h3>
+              {conversation.group && <Sprout className="size-4 text-primary" />}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">12 members</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {conversation.members
+                ? `${conversation.members} members`
+                : "Active now"}
+            </p>
           </div>
         </div>
         <p className="mt-4 text-xs leading-5 text-muted-foreground">
@@ -75,7 +85,9 @@ export default function InfoPanel({ onClose }: InfoPanelProps) {
 
       <section className="border-b px-6 py-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Members (12)</h3>
+          <h3 className="text-sm font-semibold">
+            Members ({conversation.members ?? 2})
+          </h3>
           <button type="button" className="text-xs font-medium text-primary">
             See all
           </button>

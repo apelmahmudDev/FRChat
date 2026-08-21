@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 
 import {
   Building2,
@@ -22,64 +23,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-const conversations = [
-  {
-    name: "Product Team",
-    preview: "James: Here’s the latest update on the roadmap.",
-    time: "10:24 AM",
-    unread: 3,
-    initials: "PT",
-    group: true,
-  },
-  {
-    name: "Sophia Bennett",
-    preview: "Thanks Olivia! Can you share the deck?",
-    time: "9:48 AM",
-    unread: 1,
-    initials: "SB",
-  },
-  {
-    name: "Design Team",
-    preview: "Liam: Uploaded 3 new files.",
-    time: "9:15 AM",
-    initials: "DT",
-    group: true,
-  },
-  {
-    name: "Ethan Brooks",
-    preview: "Great, let’s sync tomorrow.",
-    time: "Yesterday",
-    initials: "EB",
-  },
-  {
-    name: "Marketing Team",
-    preview: "Mia: Campaign results are in!",
-    time: "Yesterday",
-    unread: 2,
-    initials: "MT",
-    group: true,
-  },
-  {
-    name: "Jack Mitchell",
-    preview: "Sounds good, thanks!",
-    time: "May 14",
-    initials: "JM",
-  },
-  {
-    name: "Client: Acme Corp",
-    preview: "Sarah: Let’s schedule a call.",
-    time: "May 13",
-    initials: "AC",
-    company: true,
-  },
-  {
-    name: "# General",
-    preview: "Riley: Welcome to the team! 🎉",
-    time: "May 12",
-    initials: "#",
-  },
-]
+import { IconTooltip } from "@/components/ui/icon-tooltip"
+import { conversations } from "@/features/messages/data/conversations"
 
 const avatarColors = [
   "bg-emerald-100 text-emerald-800",
@@ -94,7 +39,13 @@ const filters = ["All", "Unread", "Direct", "Groups"] as const
 
 type ConversationFilter = (typeof filters)[number]
 
-export default function ConversationList() {
+type ConversationListProps = {
+  selectedConversationId: string
+}
+
+export default function ConversationList({
+  selectedConversationId,
+}: ConversationListProps) {
   const [activeFilter, setActiveFilter] = useState<ConversationFilter>("All")
 
   const filteredConversations = conversations.filter((conversation) => {
@@ -115,12 +66,14 @@ export default function ConversationList() {
             <span className="text-xl font-bold tracking-tight">FRChat</span>
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger
-              aria-label="Filter conversations"
-              className="ml-auto flex size-10 shrink-0 items-center justify-center rounded-full bg-muted transition hover:bg-muted/80 data-popup-open:bg-primary/10 data-popup-open:text-primary"
-            >
-              <SlidersHorizontal className="size-4" />
-            </DropdownMenuTrigger>
+            <IconTooltip label="Filter conversations">
+              <DropdownMenuTrigger
+                aria-label="Filter conversations"
+                className="ml-auto flex size-10 shrink-0 items-center justify-center rounded-full bg-muted transition hover:bg-muted/80 data-popup-open:bg-primary/10 data-popup-open:text-primary"
+              >
+                <SlidersHorizontal className="size-4" />
+              </DropdownMenuTrigger>
+            </IconTooltip>
             <DropdownMenuContent
               align="end"
               sideOffset={8}
@@ -180,10 +133,14 @@ export default function ConversationList() {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-1 pt-3 pb-1">
         {filteredConversations.map((conversation, index) => (
-          <button
-            type="button"
+          <Link
+            href={`/messages/${conversation.id}`}
+            scroll={false}
             key={conversation.name}
-            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left transition ${index === 0 ? "bg-primary/8" : "hover:bg-muted/70"}`}
+            aria-current={
+              selectedConversationId === conversation.id ? "page" : undefined
+            }
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left transition ${selectedConversationId === conversation.id ? "bg-primary/8" : "hover:bg-muted/70"}`}
           >
             <span
               className={`relative flex size-11 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarColors[index % avatarColors.length]}`}
@@ -222,7 +179,7 @@ export default function ConversationList() {
                 )}
               </span>
             </span>
-          </button>
+          </Link>
         ))}
       </div>
     </aside>
