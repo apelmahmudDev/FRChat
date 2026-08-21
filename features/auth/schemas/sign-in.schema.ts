@@ -5,10 +5,7 @@ export const signInFormSchema = z.object({
     .string()
     .trim()
     .min(1, "Phone number is required.")
-    .regex(
-      /^(\+?\d[\d\s-]{7,}\d)$/,
-      "Please enter a valid phone number."
-    )
+    .regex(/^(\+?\d[\d\s-]{7,}\d)$/, "Please enter a valid phone number.")
     .max(20, "Phone number must be at most 20 characters."),
   name: z
     .string()

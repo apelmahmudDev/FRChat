@@ -8,6 +8,8 @@ import {
   Sprout,
   Video,
 } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 
 import {
   DropdownMenu,
@@ -19,6 +21,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
+import {
+  authKeys,
+  currentSessionQueryOptions,
+  logout,
+} from "@/features/auth/api/auth"
 import type { Conversation } from "@/features/messages/data/conversations"
 
 type ChatHeaderProps = {
@@ -32,6 +39,26 @@ export default function ChatHeader({
   isInfoPanelOpen,
   onInfoPanelToggle,
 }: ChatHeaderProps) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { data: session } = useQuery(currentSessionQueryOptions())
+  const logoutMutation = useMutation({
+    mutationKey: [...authKeys.all, "logout"],
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: authKeys.all })
+      router.replace("/sign-in")
+      router.refresh()
+    },
+  })
+  const profileName = session?.user.name ?? "Account"
+  const profilePhone = session?.user.phone ?? "Signed in"
+  const profileInitials = profileName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("")
+
   return (
     <header className="flex h-[82px] shrink-0 items-center justify-between border-b bg-card px-5 sm:px-7">
       <div className="flex min-w-0 items-center gap-3">
@@ -96,7 +123,7 @@ export default function ChatHeader({
               aria-label="Open profile menu"
               className="group relative ml-1 flex size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 text-xs font-bold text-white shadow-sm ring-2 ring-background transition hover:ring-primary/25 data-popup-open:ring-primary/30"
             >
-              AL
+              {profileInitials}
               <span className="absolute right-0 bottom-0 size-3 rounded-full border-2 border-card bg-emerald-400" />
               <span className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full bg-muted text-foreground shadow-sm">
                 <ChevronDown className="size-3" />
@@ -107,14 +134,14 @@ export default function ChatHeader({
             <DropdownMenuGroup>
               <DropdownMenuLabel className="flex items-center gap-3 px-2 py-2.5">
                 <span className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 text-xs font-bold text-white">
-                  AL
+                  {profileInitials}
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-semibold text-foreground">
-                    Ada Lovelace
+                    {profileName}
                   </span>
                   <span className="block truncate text-xs font-normal text-muted-foreground">
-                    +1 555 123 4567
+                    {profilePhone}
                   </span>
                 </span>
               </DropdownMenuLabel>
@@ -129,9 +156,14 @@ export default function ChatHeader({
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" className="h-10 px-2.5">
+            <DropdownMenuItem
+              variant="destructive"
+              disabled={logoutMutation.isPending}
+              onClick={() => logoutMutation.mutate()}
+              className="h-10 px-2.5"
+            >
               <LogOut className="size-4" />
-              Sign out
+              {logoutMutation.isPending ? "Signing out..." : "Sign out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

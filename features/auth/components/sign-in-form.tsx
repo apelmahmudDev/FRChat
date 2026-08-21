@@ -1,26 +1,71 @@
 "use client"
 
 import { useForm } from "@tanstack/react-form"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { MessageCircleMore, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/components/ui/toast"
+import { authKeys, login } from "@/features/auth/api/auth"
+import { ApiClientError } from "@/lib/api/error"
 import {
   type SignInFormValues,
   signInFormSchema,
 } from "../schemas/sign-in.schema"
 
-export default function SignInForm() {
+const defaultValues: SignInFormValues = {
+  phone: "",
+  name: "",
+}
+
+type SignInFormProps = {
+  redirectTo?: string
+}
+
+export default function SignInForm({
+  redirectTo = "/messages",
+}: SignInFormProps) {
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const loginMutation = useMutation({
+    mutationKey: [...authKeys.all, "login"],
+    mutationFn: login,
+    onSuccess: (session) => {
+      queryClient.setQueryData(authKeys.session(), session)
+      toast.add({
+        title: "Welcome to FRChat",
+        description: `Signed in as ${session.user.name}.`,
+        type: "success",
+      })
+      router.replace(redirectTo)
+    },
+    onError: (error) => {
+      toast.add({
+        title: "Unable to sign in",
+        description:
+          error instanceof ApiClientError
+            ? error.message
+            : "Something went wrong. Please try again.",
+        type: "error",
+      })
+    },
+  })
+
   const form = useForm({
-    defaultValues: {
-      phone: "",
-      name: "",
-    } satisfies SignInFormValues,
+    defaultValues,
     validators: {
       onSubmit: signInFormSchema,
     },
-    onSubmit: async () => {},
+    onSubmit: async ({ value }) => {
+      try {
+        await loginMutation.mutateAsync(value)
+      } catch {
+        // The mutation callback owns presentation of API errors.
+      }
+    },
   })
 
   return (
@@ -28,17 +73,21 @@ export default function SignInForm() {
       <form
         id="sign-in-form"
         className="space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault()
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
           void form.handleSubmit()
         }}
       >
         <FieldGroup>
-          <form.Field name="phone">
+          <form.Field
+            name="phone"
+            validators={{ onBlur: signInFormSchema.shape.phone }}
+          >
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid
-              const value = field.state.value as SignInFormValues["phone"]
 
               return (
                 <Field data-invalid={isInvalid} className="space-y-2">
@@ -50,12 +99,14 @@ export default function SignInForm() {
                     id={field.name}
                     name={field.name}
                     type="tel"
-                    value={value}
+                    value={field.state.value}
                     onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                    onChange={(event) => field.handleChange(event.target.value)}
                     placeholder="+880 1712 345 678"
                     autoComplete="tel"
                     aria-invalid={isInvalid}
+                    aria-describedby={isInvalid ? "phone-error" : undefined}
+                    disabled={loginMutation.isPending}
                     className="h-13 rounded-xl border-border bg-background px-4 text-sm transition focus-visible:ring-primary"
                   />
 
@@ -63,17 +114,24 @@ export default function SignInForm() {
                     We&apos;ll use this number to identify your account.
                   </p>
 
-                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  {isInvalid && (
+                    <FieldError
+                      id="phone-error"
+                      errors={field.state.meta.errors}
+                    />
+                  )}
                 </Field>
               )
             }}
           </form.Field>
 
-          <form.Field name="name">
+          <form.Field
+            name="name"
+            validators={{ onBlur: signInFormSchema.shape.name }}
+          >
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid
-              const value = field.state.value as SignInFormValues["name"]
 
               return (
                 <Field data-invalid={isInvalid} className="space-y-2">
@@ -83,17 +141,20 @@ export default function SignInForm() {
 
                   <div className="relative">
                     <User className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" />
-
                     <Input
                       id={field.name}
                       name={field.name}
                       type="text"
-                      value={value}
+                      value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
                       placeholder="Enter your name"
                       autoComplete="name"
                       aria-invalid={isInvalid}
+                      aria-describedby={isInvalid ? "name-error" : undefined}
+                      disabled={loginMutation.isPending}
                       className="h-13 rounded-xl border-border bg-background px-4 pl-12"
                     />
                   </div>
@@ -102,35 +163,48 @@ export default function SignInForm() {
                     This is how others will see you.
                   </p>
 
-                  {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                  {isInvalid && (
+                    <FieldError
+                      id="name-error"
+                      errors={field.state.meta.errors}
+                    />
+                  )}
                 </Field>
               )
             }}
           </form.Field>
         </FieldGroup>
 
-        <Button
-          type="submit"
-          form="sign-in-form"
-          className="h-13 w-full rounded-xl bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:opacity-90"
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
         >
-          <span className="flex items-center gap-2">
-            <MessageCircleMore className="size-4" />
-            Continue to Chat
-          </span>
-        </Button>
+          {([canSubmit, isSubmitting]) => {
+            const isPending = isSubmitting || loginMutation.isPending
+
+            return (
+              <Button
+                type="submit"
+                disabled={!canSubmit || isPending}
+                aria-busy={isPending}
+                className="h-13 w-full rounded-xl bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:opacity-90"
+              >
+                <span className="flex items-center gap-2">
+                  <MessageCircleMore className="size-4" />
+                  {isPending ? "Signing in..." : "Continue to Chat"}
+                </span>
+              </Button>
+            )
+          }}
+        </form.Subscribe>
 
         <div className="flex items-center gap-4 py-2">
           <div className="h-px flex-1 bg-border" />
-
           <span className="text-xs text-muted-foreground">OR</span>
-
           <div className="h-px flex-1 bg-border" />
         </div>
 
         <div className="rounded-xl border border-border bg-muted/30 p-4">
           <p className="text-sm font-semibold">New here? Don&apos;t worry!</p>
-
           <p className="mt-1 text-xs text-muted-foreground">
             If your number is new, we&apos;ll create an account for you.
           </p>

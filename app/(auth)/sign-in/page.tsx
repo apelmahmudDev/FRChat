@@ -18,7 +18,19 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SignInPage() {
+type SignInPageProps = {
+  searchParams: Promise<{ next?: string | string[] }>
+}
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const requestedDestination = (await searchParams).next
+  const redirectTo =
+    typeof requestedDestination === "string" &&
+    requestedDestination.startsWith("/messages") &&
+    !requestedDestination.startsWith("//")
+      ? requestedDestination
+      : "/messages"
+
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center p-6">
@@ -28,7 +40,7 @@ export default function SignInPage() {
 
           {/* Right Login */}
           <section className="flex items-center justify-center p-6 sm:p-10 lg:p-14">
-            <SignInForm />
+            <SignInForm redirectTo={redirectTo} />
           </section>
         </div>
       </div>
