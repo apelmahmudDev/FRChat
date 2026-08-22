@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, LockKeyhole, Radio, Sparkles } from "lucide-react"
 
-import BrandLogo from "./brand-logo"
+import BrandLogo from "@/components/brand-logo"
 
 const footerLinkClassName =
   "rounded-sm transition-colors hover:text-[#0a8f55] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a8f55]"

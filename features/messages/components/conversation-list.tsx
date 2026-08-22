@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react"
 
+import BrandLogo from "@/components/brand-logo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,12 +90,7 @@ export default function ConversationList({
             aria-label="FRChat home"
             className="group flex shrink-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
           >
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
-              <MessageCircleMore className="size-5" />
-            </span>
-            <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
-              FRChat
-            </span>
+            <BrandLogo />
           </Link>
           <DropdownMenu>
             <IconTooltip label="Filter conversations">

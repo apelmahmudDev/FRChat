@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
-import BrandLogo from "./brand-logo"
+import BrandLogo from "@/components/brand-logo"
+
 import ThemeSwitcher from "./theme-switcher"
 
 const navigation = [
