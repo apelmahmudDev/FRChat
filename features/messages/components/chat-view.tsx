@@ -23,7 +23,7 @@ export default function ChatView({
   initialConversations,
   selectedConversationId,
 }: ChatViewProps) {
-  const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(true)
+  const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false)
   const { data: conversations } = useQuery(
     conversationListQueryOptions(initialConversations)
   )
