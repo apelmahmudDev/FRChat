@@ -130,3 +130,45 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .landing-page {
+    color-scheme: light;
+  }
+
+  .dark .landing-page {
+    color-scheme: dark;
+  }
+
+  .landing-hero-surface {
+    background: linear-gradient(180deg, #f7f8f2 0%, #fbfcf8 100%);
+  }
+
+  .dark .landing-hero-surface {
+    background: linear-gradient(180deg, #0b1610 0%, #08110d 100%);
+  }
+
+  .landing-dot-grid {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 14px 14px;
+    -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 72%);
+    mask-image: radial-gradient(circle, #000 20%, transparent 72%);
+  }
+
+  .landing-chat-surface {
+    background: linear-gradient(180deg, #fbfcf8 0%, #ffffff 48%);
+  }
+
+  .dark .landing-chat-surface {
+    background: linear-gradient(180deg, #101d17 0%, #0d1812 48%);
+  }
+
+  .landing-scene-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 38px 38px;
+    -webkit-mask-image: linear-gradient(to bottom, #000, transparent 85%);
+    mask-image: linear-gradient(to bottom, #000, transparent 85%);
+  }
+}

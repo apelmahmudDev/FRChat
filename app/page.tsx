@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import CapabilitiesSection from "@/features/landing/components/capabilities-section"
 import ClosingSection from "@/features/landing/components/closing-section"
 import HeroSection from "@/features/landing/components/hero-section"
-import styles from "@/features/landing/components/landing.module.css"
 import ProductStorySection from "@/features/landing/components/product-story-section"
 import SiteHeader from "@/features/landing/components/site-header"
 
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <div className={styles.page}>
+    <div className="landing-page min-h-screen overflow-clip bg-[#f7f8f2] text-[#14251d] selection:bg-[#c9f35b] selection:text-[#14251d] dark:bg-[#08110d] dark:text-[#eef8f1]">
       <SiteHeader />
       <main>
         <HeroSection />

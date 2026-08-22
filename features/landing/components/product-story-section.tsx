@@ -9,8 +9,6 @@ import {
   Zap,
 } from "lucide-react"
 
-import styles from "./landing.module.css"
-
 const benefits = [
   "Search people by name or phone",
   "Start one-to-one and group chats",
@@ -39,7 +37,7 @@ const flow = [
 function ProductScene() {
   return (
     <div className="relative min-h-[500px] overflow-hidden rounded-[34px] bg-[#123829] p-5 text-white shadow-[0_28px_70px_rgba(18,56,41,0.2)] sm:p-8">
-      <div className={`${styles.sceneGrid} absolute inset-0 opacity-30`} />
+      <div className="landing-scene-grid absolute inset-0 opacity-30" />
       <div className="absolute -top-24 -right-20 size-72 rounded-full bg-[#77d798]/20 blur-3xl" />
       <div className="absolute -bottom-20 -left-16 size-64 rounded-full bg-[#c9f35b]/15 blur-3xl" />
 
@@ -48,9 +46,7 @@ function ProductScene() {
           Product room
         </span>
         <span className="inline-flex items-center gap-2 text-[10px] font-bold text-white/70">
-          <span
-            className={`${styles.liveDot} size-2 rounded-full bg-[#78e7a3]`}
-          />
+          <span className="size-2 animate-pulse rounded-full bg-[#78e7a3] motion-reduce:animate-none" />
           4 online
         </span>
       </div>
@@ -96,9 +92,7 @@ function ProductScene() {
         </div>
       </div>
 
-      <div
-        className={`${styles.floatSlow} absolute top-28 left-3 rounded-2xl border border-white/12 bg-white/10 p-3 shadow-xl backdrop-blur-md sm:left-7`}
-      >
+      <div className="absolute top-28 left-3 rounded-2xl border border-white/12 bg-white/10 p-3 shadow-xl backdrop-blur-md sm:left-7">
         <div className="flex items-center gap-2">
           <span className="flex size-8 items-center justify-center rounded-full bg-[#c9f35b] text-[9px] font-extrabold text-[#17382a]">
             SK
@@ -112,9 +106,7 @@ function ProductScene() {
         </div>
       </div>
 
-      <div
-        className={`${styles.floatReverse} absolute right-3 bottom-8 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 text-[#17382a] shadow-2xl sm:right-7 dark:bg-[#16271e] dark:text-[#e9f4ed]`}
-      >
+      <div className="absolute right-3 bottom-8 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 text-[#17382a] shadow-2xl sm:right-7 dark:bg-[#16271e] dark:text-[#e9f4ed]">
         <span className="flex size-8 items-center justify-center rounded-xl bg-[#dff3e7] text-[#0a8f55]">
           <Search className="size-4" />
         </span>

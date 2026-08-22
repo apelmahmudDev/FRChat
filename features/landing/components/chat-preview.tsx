@@ -10,8 +10,6 @@ import {
   Users,
 } from "lucide-react"
 
-import styles from "./landing.module.css"
-
 const conversations = [
   {
     initials: "PT",
@@ -116,7 +114,7 @@ function MessageThread() {
         </span>
       </header>
 
-      <div className="flex min-h-[276px] flex-1 flex-col justify-end gap-3 bg-[linear-gradient(180deg,#fbfcf8_0%,#ffffff_48%)] px-3 py-4 sm:px-5 dark:bg-[linear-gradient(180deg,#101d17_0%,#0d1812_48%)]">
+      <div className="landing-chat-surface flex min-h-[276px] flex-1 flex-col justify-end gap-3 px-3 py-4 sm:px-5">
         <span className="self-center rounded-full bg-[#f0f3ed] px-2.5 py-1 text-[7px] font-bold text-[#718078] dark:bg-white/7 dark:text-[#91a198]">
           Today
         </span>
@@ -149,7 +147,7 @@ function MessageThread() {
             </span>
           </span>
         </div>
-        <div className={`${styles.newMessage} flex justify-end`}>
+        <div className="flex animate-in justify-end delay-500 duration-700 fill-mode-both fade-in slide-in-from-bottom-2 motion-reduce:animate-none">
           <div className="max-w-[245px] rounded-2xl rounded-br-md bg-[#ddf4e6] px-3 py-2.5 text-[9px] leading-relaxed text-[#17382a] dark:bg-[#18482f] dark:text-[#e4f2e9]">
             Looks great. I added the launch notes and tagged everyone.
             <span className="mt-1 flex items-center justify-end gap-1 text-[7px] font-bold text-[#0a8f55]">
@@ -179,10 +177,8 @@ export default function ChatPreview() {
       className="relative mx-auto w-full max-w-[720px]"
       aria-label="Preview of the FRChat messaging experience"
     >
-      <div
-        className={`${styles.floatingNote} absolute -top-5 right-5 z-20 hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-bold text-[#17382a] shadow-[0_12px_32px_rgba(23,58,42,0.14)] backdrop-blur sm:flex dark:border-white/10 dark:bg-[#16271e]/90 dark:text-[#dce9e1] dark:shadow-[0_12px_32px_rgba(0,0,0,0.25)]`}
-      >
-        <span className="size-2 rounded-full bg-[#24ba6b] shadow-[0_0_0_4px_rgba(36,186,107,0.12)]" />
+      <div className="absolute -top-5 right-5 z-20 hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-bold text-[#17382a] shadow-[0_12px_32px_rgba(23,58,42,0.14)] backdrop-blur sm:flex dark:border-white/10 dark:bg-[#16271e]/90 dark:text-[#dce9e1] dark:shadow-[0_12px_32px_rgba(0,0,0,0.25)]">
+        <span className="size-2 animate-pulse rounded-full bg-[#24ba6b] shadow-[0_0_0_4px_rgba(36,186,107,0.12)] motion-reduce:animate-none" />
         Live now
       </div>
       <div className="absolute -right-5 -bottom-5 -z-10 h-32 w-32 rounded-full bg-[#c9f35b]/35 blur-3xl" />
