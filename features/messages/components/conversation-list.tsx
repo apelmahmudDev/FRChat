@@ -220,6 +220,26 @@ export default function ConversationList({
             <p className="mt-1 text-sm text-muted-foreground">
               {emptyDescription}
             </p>
+            {isEmptyList && (
+              <div className="mt-5 grid w-full gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsNewConversationOpen(true)}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  <MessageSquarePlus className="size-4" />
+                  Start a conversation
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsNewGroupOpen(true)}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition hover:border-primary/25 hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  <Users className="size-4" />
+                  Create a group
+                </button>
+              </div>
+            )}
             {isNoResults && (
               <button
                 type="button"
