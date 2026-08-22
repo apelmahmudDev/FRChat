@@ -97,8 +97,8 @@ function mapConversation(
   }
 }
 
-export async function getServerConversations() {
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value
+export async function getServerConversations(accessToken?: string) {
+  const token = accessToken ?? (await cookies()).get(AUTH_COOKIE_NAME)?.value
   if (!token) throw new Error("Authentication required.")
 
   const { body, response } = await upstreamRequest("/conversations", { token })

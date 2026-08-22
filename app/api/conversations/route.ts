@@ -1,9 +1,12 @@
-import { cookies } from "next/headers"
 import { z } from "zod"
 
-import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
 import { getServerConversations } from "@/features/conversations/api/conversations.server"
-import { normalizeApiError } from "@/lib/api/error"
+import {
+  invalidUpstreamResponse,
+  requireApiAuth,
+  serviceUnavailableResponse,
+  upstreamErrorResponse,
+} from "@/lib/api/route"
 import { upstreamRequest } from "@/lib/api/server"
 
 const createConversationSchema = z.object({
@@ -19,17 +22,18 @@ const upstreamCreatedConversationSchema = z
   .loose()
 
 export async function GET() {
-  try {
-    return Response.json({ data: await getServerConversations() })
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "The conversations service is currently unavailable."
+  const auth = await requireApiAuth()
+  if (!auth.ok) return auth.response
 
-    return Response.json(
-      { message },
-      { status: message === "Authentication required." ? 401 : 503 }
+  try {
+    return Response.json({
+      data: await getServerConversations(auth.token),
+    })
+  } catch (error) {
+    return serviceUnavailableResponse(
+      "conversations",
+      "Unable to load conversations",
+      error
     )
   }
 }
@@ -49,50 +53,40 @@ export async function POST(request: Request) {
     )
   }
 
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value
-
-  if (!token) {
-    return Response.json(
-      { message: "Authentication required.", code: "UNAUTHENTICATED" },
-      { status: 401 }
-    )
-  }
+  const auth = await requireApiAuth()
+  if (!auth.ok) return auth.response
 
   try {
     const { body, response } = await upstreamRequest("/conversations", {
       method: "POST",
-      token,
+      token: auth.token,
       body: JSON.stringify(payload.data),
     })
 
     if (!response.ok) {
-      return Response.json(
-        normalizeApiError(body, "Unable to start the conversation."),
-        {
-          status: response.status,
-        }
+      return upstreamErrorResponse(
+        body,
+        response,
+        "Unable to start the conversation."
       )
     }
 
     const parsedResponse = upstreamCreatedConversationSchema.safeParse(body)
 
     if (!parsedResponse.success) {
-      console.error(
+      return invalidUpstreamResponse(
+        "conversations",
         "Invalid POST /conversations response",
         parsedResponse.error
-      )
-      return Response.json(
-        { message: "The conversations service returned an invalid response." },
-        { status: 502 }
       )
     }
 
     return Response.json(parsedResponse.data, { status: response.status })
   } catch (error) {
-    console.error("Unable to create conversation", error)
-    return Response.json(
-      { message: "The conversations service is currently unavailable." },
-      { status: 503 }
+    return serviceUnavailableResponse(
+      "conversations",
+      "Unable to create conversation",
+      error
     )
   }
 }

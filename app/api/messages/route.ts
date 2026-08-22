@@ -1,8 +1,10 @@
-import { cookies } from "next/headers"
 import { z } from "zod"
 
-import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
-import { normalizeApiError } from "@/lib/api/error"
+import {
+  requireApiAuth,
+  serviceUnavailableResponse,
+  upstreamErrorResponse,
+} from "@/lib/api/route"
 import { upstreamRequest } from "@/lib/api/server"
 
 const sendMessageSchema = z.object({
@@ -20,24 +22,17 @@ export async function POST(request: Request) {
     )
   }
 
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value
-  if (!token) {
-    return Response.json(
-      { message: "Authentication required." },
-      { status: 401 }
-    )
-  }
+  const auth = await requireApiAuth()
+  if (!auth.ok) return auth.response
 
   try {
     const { body, response } = await upstreamRequest("/messages", {
       method: "POST",
-      token,
+      token: auth.token,
       body: JSON.stringify(payload.data),
     })
     if (!response.ok) {
-      return Response.json(normalizeApiError(body, "Unable to send message."), {
-        status: response.status,
-      })
+      return upstreamErrorResponse(body, response, "Unable to send message.")
     }
 
     // The message API acknowledges a successful write, but its response body is
@@ -46,10 +41,10 @@ export async function POST(request: Request) {
     // because optional metadata is absent or wrapped differently.
     return Response.json({ ok: true }, { status: response.status })
   } catch (error) {
-    console.error("Unable to send message", error)
-    return Response.json(
-      { message: "The messages service is currently unavailable." },
-      { status: 503 }
+    return serviceUnavailableResponse(
+      "messages",
+      "Unable to send message",
+      error
     )
   }
 }

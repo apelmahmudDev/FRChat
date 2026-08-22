@@ -5,7 +5,11 @@ import {
   authSessionSchema,
   upstreamCurrentUserSchema,
 } from "@/features/auth/schemas/auth.schema"
-import { normalizeApiError } from "@/lib/api/error"
+import {
+  invalidUpstreamResponse,
+  serviceUnavailableResponse,
+  upstreamErrorResponse,
+} from "@/lib/api/route"
 import { upstreamRequest } from "@/lib/api/server"
 
 export async function GET() {
@@ -27,24 +31,16 @@ export async function GET() {
         cookieStore.delete(AUTH_COOKIE_NAME)
       }
 
-      return Response.json(
-        normalizeApiError(body, "Unable to restore session."),
-        {
-          status: response.status,
-        }
-      )
+      return upstreamErrorResponse(body, response, "Unable to restore session.")
     }
 
     const parsedUser = upstreamCurrentUserSchema.safeParse(body)
 
     if (!parsedUser.success) {
-      console.error("Invalid /auth/me response", parsedUser.error)
-      return Response.json(
-        {
-          message: "The authentication server returned an invalid response.",
-          code: "INVALID_UPSTREAM_RESPONSE",
-        },
-        { status: 502 }
+      return invalidUpstreamResponse(
+        "authentication",
+        "Invalid /auth/me response",
+        parsedUser.error
       )
     }
 
@@ -52,13 +48,10 @@ export async function GET() {
       headers: { "Cache-Control": "no-store" },
     })
   } catch (error) {
-    console.error("Authentication API unavailable", error)
-    return Response.json(
-      {
-        message: "The authentication service is currently unavailable.",
-        code: "UPSTREAM_UNAVAILABLE",
-      },
-      { status: 503 }
+    return serviceUnavailableResponse(
+      "authentication",
+      "Authentication API unavailable",
+      error
     )
   }
 }

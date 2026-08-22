@@ -1,13 +1,16 @@
-import { cookies } from "next/headers"
 import { z } from "zod"
 
-import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
 import { userMatchesSearch } from "@/features/users/lib/user-search"
 import {
   type ChatUser,
   chatUserSchema,
 } from "@/features/users/types/user.types"
-import { normalizeApiError } from "@/lib/api/error"
+import {
+  invalidUpstreamResponse,
+  requireApiAuth,
+  serviceUnavailableResponse,
+  upstreamErrorResponse,
+} from "@/lib/api/route"
 import { upstreamRequest } from "@/lib/api/server"
 
 const searchSchema = z.object({
@@ -39,13 +42,8 @@ export async function GET(request: Request) {
     )
   }
 
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value
-  if (!token) {
-    return Response.json(
-      { message: "Authentication required." },
-      { status: 401 }
-    )
-  }
+  const auth = await requireApiAuth()
+  if (!auth.ok) return auth.response
 
   const search = new URLSearchParams({
     q: query.data.q,
@@ -55,23 +53,18 @@ export async function GET(request: Request) {
   try {
     const { body, response } = await upstreamRequest(
       `/users/search?${search}`,
-      { token }
+      { token: auth.token }
     )
     if (!response.ok) {
-      return Response.json(
-        normalizeApiError(body, "Unable to search for users."),
-        {
-          status: response.status,
-        }
-      )
+      return upstreamErrorResponse(body, response, "Unable to search users.")
     }
 
     const users = upstreamUsersSchema.safeParse(body)
     if (!users.success) {
-      console.error("Invalid GET /users/search response", users.error)
-      return Response.json(
-        { message: "The users service returned an invalid response." },
-        { status: 502 }
+      return invalidUpstreamResponse(
+        "users",
+        "Invalid GET /users/search response",
+        users.error
       )
     }
 
@@ -79,10 +72,6 @@ export async function GET(request: Request) {
       data: users.data.filter((user) => userMatchesSearch(user, query.data.q)),
     })
   } catch (error) {
-    console.error("Unable to search users", error)
-    return Response.json(
-      { message: "The users service is currently unavailable." },
-      { status: 503 }
-    )
+    return serviceUnavailableResponse("users", "Unable to search users", error)
   }
 }

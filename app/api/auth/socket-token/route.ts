@@ -1,19 +1,11 @@
-import { cookies } from "next/headers"
-
-import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
 import { socketTokenSchema } from "@/features/auth/schemas/auth.schema"
+import { requireApiAuth } from "@/lib/api/route"
 
 export async function GET() {
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value
+  const auth = await requireApiAuth()
+  if (!auth.ok) return auth.response
 
-  if (!token) {
-    return Response.json(
-      { message: "Authentication required.", code: "UNAUTHENTICATED" },
-      { status: 401 }
-    )
-  }
-
-  return Response.json(socketTokenSchema.parse({ token }), {
+  return Response.json(socketTokenSchema.parse({ token: auth.token }), {
     headers: {
       "Cache-Control": "no-store, private",
       Pragma: "no-cache",

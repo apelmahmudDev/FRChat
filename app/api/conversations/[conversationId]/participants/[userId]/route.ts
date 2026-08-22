@@ -1,8 +1,11 @@
-import { cookies } from "next/headers"
 import { z } from "zod"
 
-import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
-import { normalizeApiError } from "@/lib/api/error"
+import {
+  requireApiAuth,
+  type RouteContext,
+  serviceUnavailableResponse,
+  upstreamErrorResponse,
+} from "@/lib/api/route"
 import { upstreamRequest } from "@/lib/api/server"
 
 const paramsSchema = z.object({
@@ -12,34 +15,27 @@ const paramsSchema = z.object({
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ conversationId: string; userId: string }> }
+  { params }: RouteContext<{ conversationId: string; userId: string }>
 ) {
   const routeParams = paramsSchema.safeParse(await params)
   if (!routeParams.success)
     return Response.json({ message: "Invalid group member." }, { status: 400 })
-  const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value
-  if (!token)
-    return Response.json(
-      { message: "Authentication required." },
-      { status: 401 }
-    )
+  const auth = await requireApiAuth()
+  if (!auth.ok) return auth.response
 
   try {
     const { body, response } = await upstreamRequest(
       `/conversations/${encodeURIComponent(routeParams.data.conversationId)}/participants/${encodeURIComponent(routeParams.data.userId)}`,
-      { method: "DELETE", token }
+      { method: "DELETE", token: auth.token }
     )
     if (!response.ok)
-      return Response.json(
-        normalizeApiError(body, "Unable to remove member."),
-        { status: response.status }
-      )
+      return upstreamErrorResponse(body, response, "Unable to remove member.")
     return Response.json(body ?? null, { status: response.status })
   } catch (error) {
-    console.error("Unable to remove group member", error)
-    return Response.json(
-      { message: "The conversations service is currently unavailable." },
-      { status: 503 }
+    return serviceUnavailableResponse(
+      "conversations",
+      "Unable to remove group member",
+      error
     )
   }
 }

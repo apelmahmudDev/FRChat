@@ -9,7 +9,11 @@ import {
   upstreamLoginResponseSchema,
 } from "@/features/auth/schemas/auth.schema"
 import { signInFormSchema } from "@/features/auth/schemas/sign-in.schema"
-import { normalizeApiError } from "@/lib/api/error"
+import {
+  invalidUpstreamResponse,
+  serviceUnavailableResponse,
+  upstreamErrorResponse,
+} from "@/lib/api/route"
 import { upstreamRequest } from "@/lib/api/server"
 
 export async function POST(request: Request) {
@@ -34,21 +38,16 @@ export async function POST(request: Request) {
     })
 
     if (!response.ok) {
-      return Response.json(normalizeApiError(body, "Unable to sign in."), {
-        status: response.status,
-      })
+      return upstreamErrorResponse(body, response, "Unable to sign in.")
     }
 
     const parsedResponse = upstreamLoginResponseSchema.safeParse(body)
 
     if (!parsedResponse.success) {
-      console.error("Invalid /auth/login response", parsedResponse.error)
-      return Response.json(
-        {
-          message: "The authentication server returned an invalid response.",
-          code: "INVALID_UPSTREAM_RESPONSE",
-        },
-        { status: 502 }
+      return invalidUpstreamResponse(
+        "authentication",
+        "Invalid /auth/login response",
+        parsedResponse.error
       )
     }
 
@@ -64,13 +63,10 @@ export async function POST(request: Request) {
       { headers: { "Cache-Control": "no-store" } }
     )
   } catch (error) {
-    console.error("Authentication API unavailable", error)
-    return Response.json(
-      {
-        message: "The authentication service is currently unavailable.",
-        code: "UPSTREAM_UNAVAILABLE",
-      },
-      { status: 503 }
+    return serviceUnavailableResponse(
+      "authentication",
+      "Authentication API unavailable",
+      error
     )
   }
 }
