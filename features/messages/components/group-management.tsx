@@ -11,8 +11,8 @@ import {
   promoteAdmin,
   removeParticipant,
   renameGroup,
-} from "@/features/messages/api/messaging"
-import { conversationKeys } from "@/features/messages/api/query-keys"
+} from "@/features/conversations/api/conversations.api"
+import { conversationKeys } from "@/features/conversations/api/conversations.keys"
 import type { Conversation } from "@/features/messages/data/conversations"
 
 export default function GroupManagement({

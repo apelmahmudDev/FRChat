@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { LoaderCircle, RefreshCw } from "lucide-react"
 
-import { currentSessionQueryOptions } from "@/features/auth/api/auth"
-import { messageHistoryQueryOptions } from "@/features/messages/api/messages"
+import { currentSessionQueryOptions } from "@/features/auth/api/auth.queries"
+import { messageHistoryQueryOptions } from "@/features/messages/api/messages.queries"
 import type { Conversation } from "@/features/messages/data/conversations"
 
 function formatMessageTime(value: string) {
@@ -27,10 +27,11 @@ export default function MessageList({ conversation }: MessageListProps) {
   )
   const messages =
     historyQuery.data?.pages.flatMap((page) => page.data).toReversed() ?? []
+  const latestMessageId = messages.at(-1)?._id
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" })
-  }, [conversation.id])
+  }, [conversation.id, latestMessageId])
 
   if (historyQuery.isPending) {
     return (

@@ -4,12 +4,10 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { io, type Socket } from "socket.io-client"
 
-import { getSocketToken } from "@/features/auth/api/auth"
-import {
-  conversationKeys,
-  messageKeys,
-} from "@/features/messages/api/query-keys"
-import type { ChatMessage } from "@/features/messages/api/messages"
+import { getSocketToken } from "@/features/auth/api/auth.api"
+import { conversationKeys } from "@/features/conversations/api/conversations.keys"
+import { messageKeys } from "@/features/messages/api/messages.keys"
+import type { ChatMessage } from "@/features/messages/types/message.types"
 import {
   socketConversationEventSchema,
   socketMessageEventSchema,
@@ -29,6 +27,15 @@ type ClientToServerEvents = {
 }
 
 type ChatSocket = Socket<ServerToClientEvents, ClientToServerEvents>
+
+type MessageHistory = {
+  pages: Array<{
+    data: ChatMessage[]
+    nextCursor: string | null
+    hasMore: boolean
+  }>
+  pageParams: unknown[]
+}
 
 const SocketContext = createContext<ChatSocket | null>(null)
 
@@ -66,39 +73,75 @@ export function SocketProvider({ children }: React.PropsWithChildren) {
             text !== undefined &&
             message.createdAt
           ) {
-            queryClient.setQueryData<{
-              pages: Array<{
-                data: ChatMessage[]
-                nextCursor: string | null
-                hasMore: boolean
-              }>
-              pageParams: unknown[]
-            }>(messageKeys.list(message.conversationId), (history) => {
-              if (!history) return history
+            const messageId = message._id
+            const senderId = message.sender
+            const createdAt = message.createdAt
 
-              const receivedMessage: ChatMessage = {
-                _id: message._id!,
-                sender: message.sender!,
-                text,
-                createdAt: message.createdAt!,
-              }
-              const exists = history.pages.some((page) =>
-                page.data.some(
-                  (cachedMessage) => cachedMessage._id === message._id
+            queryClient.setQueryData<MessageHistory>(
+              messageKeys.list(message.conversationId),
+              (history) => {
+                const receivedMessage: ChatMessage = {
+                  _id: messageId,
+                  sender: senderId,
+                  text,
+                  createdAt,
+                }
+
+                if (!history) {
+                  return {
+                    pages: [
+                      {
+                        data: [receivedMessage],
+                        nextCursor: null,
+                        hasMore: false,
+                      },
+                    ],
+                    pageParams: [undefined],
+                  }
+                }
+
+                const exactMatchExists = history.pages.some((page) =>
+                  page.data.some(
+                    (cachedMessage) => cachedMessage._id === receivedMessage._id
+                  )
                 )
-              )
 
-              if (exists) return history
+                if (exactMatchExists) return history
 
-              return {
-                ...history,
-                pages: history.pages.map((page, index) =>
-                  index === 0
-                    ? { ...page, data: [receivedMessage, ...page.data] }
-                    : page
-                ),
+                let optimisticMessageReplaced = false
+
+                return {
+                  ...history,
+                  pages: history.pages.map((page, index) => {
+                    if (index !== 0) return page
+
+                    const updatedMessages = page.data.map((cachedMessage) => {
+                      const isMatchingOptimisticMessage =
+                        !optimisticMessageReplaced &&
+                        cachedMessage._id.startsWith("optimistic-") &&
+                        cachedMessage.sender === receivedMessage.sender &&
+                        cachedMessage.text === receivedMessage.text
+
+                      if (!isMatchingOptimisticMessage) {
+                        return cachedMessage
+                      }
+
+                      optimisticMessageReplaced = true
+                      return receivedMessage
+                    })
+
+                    if (optimisticMessageReplaced) {
+                      return { ...page, data: updatedMessages }
+                    }
+
+                    return {
+                      ...page,
+                      data: [receivedMessage, ...page.data],
+                    }
+                  }),
+                }
               }
-            })
+            )
           } else {
             void queryClient.invalidateQueries({
               queryKey: messageKeys.list(message.conversationId),
@@ -129,7 +172,12 @@ export function SocketProvider({ children }: React.PropsWithChildren) {
       })
 
       activeSocket.on("connect", () => {
-        if (active) setSocket(activeSocket)
+        if (!active) return
+
+        setSocket(activeSocket)
+        // Recover messages that may have arrived while this browser was offline.
+        void queryClient.invalidateQueries({ queryKey: messageKeys.all })
+        void queryClient.invalidateQueries({ queryKey: conversationKeys.all })
       })
     }
 

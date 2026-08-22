@@ -12,13 +12,11 @@ import {
 
 import { IconTooltip } from "@/components/ui/icon-tooltip"
 import { toast } from "@/components/ui/toast"
-import { sendMessage } from "@/features/messages/api/messaging"
-import { currentSessionQueryOptions } from "@/features/auth/api/auth"
-import type { ChatMessage } from "@/features/messages/api/messages"
-import {
-  conversationKeys,
-  messageKeys,
-} from "@/features/messages/api/query-keys"
+import { sendMessage } from "@/features/messages/api/messages.api"
+import { currentSessionQueryOptions } from "@/features/auth/api/auth.queries"
+import { conversationKeys } from "@/features/conversations/api/conversations.keys"
+import { messageKeys } from "@/features/messages/api/messages.keys"
+import type { ChatMessage } from "@/features/messages/types/message.types"
 
 const iconButtonClass =
   "flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
@@ -28,6 +26,15 @@ type MessageInputProps = {
   conversationName: string
 }
 
+type MessageHistory = {
+  pages: Array<{
+    data: ChatMessage[]
+    nextCursor: string | null
+    hasMore: boolean
+  }>
+  pageParams: unknown[]
+}
+
 export default function MessageInput({
   conversationId,
   conversationName,
@@ -35,16 +42,22 @@ export default function MessageInput({
   const [text, setText] = useState("")
   const queryClient = useQueryClient()
   const sessionQuery = useQuery(currentSessionQueryOptions())
-  const sendMutation = useMutation({
-    mutationFn: ({ text }: { text: string }) =>
-      sendMessage(conversationId, text),
+  const sendMutation = useMutation<
+    void,
+    Error,
+    { text: string },
+    { previousHistory: MessageHistory | undefined }
+  >({
+    mutationFn: async ({ text }) => {
+      await sendMessage({ conversationId, text })
+    },
     onMutate: async ({ text }) => {
       await queryClient.cancelQueries({
         queryKey: messageKeys.list(conversationId),
       })
 
       const queryKey = messageKeys.list(conversationId)
-      const previousHistory = queryClient.getQueryData(queryKey)
+      const previousHistory = queryClient.getQueryData<MessageHistory>(queryKey)
       const optimisticMessage: ChatMessage = {
         _id: `optimistic-${crypto.randomUUID()}`,
         sender: sessionQuery.data?.user._id ?? "pending-user",
@@ -52,14 +65,7 @@ export default function MessageInput({
         createdAt: new Date().toISOString(),
       }
 
-      queryClient.setQueryData<{
-        pages: Array<{
-          data: ChatMessage[]
-          nextCursor: string | null
-          hasMore: boolean
-        }>
-        pageParams: unknown[]
-      }>(queryKey, (history) => {
+      queryClient.setQueryData<MessageHistory>(queryKey, (history) => {
         if (!history) {
           return {
             pages: [
@@ -83,6 +89,9 @@ export default function MessageInput({
     },
     onSuccess: () => {
       setText("")
+      void queryClient.invalidateQueries({
+        queryKey: messageKeys.list(conversationId),
+      })
       void queryClient.invalidateQueries({ queryKey: conversationKeys.all })
     },
     onError: (error: Error, _variables, context) => {

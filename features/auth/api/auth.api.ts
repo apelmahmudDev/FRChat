@@ -1,18 +1,12 @@
-import { queryOptions } from "@tanstack/react-query"
 import { z } from "zod"
 
 import { clientApiRequest } from "@/lib/api/client"
+
 import { authSessionSchema, socketTokenSchema } from "../schemas/auth.schema"
 import {
   type SignInFormValues,
   signInFormSchema,
 } from "../schemas/sign-in.schema"
-
-export const authKeys = {
-  all: ["auth"] as const,
-  session: () => [...authKeys.all, "session"] as const,
-  socketToken: () => [...authKeys.all, "socket-token"] as const,
-}
 
 export function login(values: SignInFormValues) {
   return clientApiRequest("/api/auth/login", {
@@ -42,10 +36,3 @@ export function getSocketToken() {
     schema: socketTokenSchema,
   })
 }
-
-export const currentSessionQueryOptions = () =>
-  queryOptions({
-    queryKey: authKeys.session(),
-    queryFn: getCurrentSession,
-    staleTime: 5 * 60_000,
-  })

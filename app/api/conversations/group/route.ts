@@ -7,7 +7,7 @@ import { upstreamRequest } from "@/lib/api/server"
 
 const createGroupSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  userIds: z.array(z.string().min(1)).min(1).max(100),
+  participantIds: z.array(z.string().min(1)).min(1).max(100),
 })
 const createdGroupSchema = z.object({ _id: z.string().min(1) }).loose()
 
@@ -29,34 +29,11 @@ export async function POST(request: Request) {
     )
 
   try {
-    const requestBodies = [
-      { name: payload.data.name, userIds: payload.data.userIds },
-      { name: payload.data.name, participantIds: payload.data.userIds },
-      { name: payload.data.name, participants: payload.data.userIds },
-      { name: payload.data.name, memberIds: payload.data.userIds },
-    ]
-    let result = await upstreamRequest("/conversations/group", {
+    const { body, response } = await upstreamRequest("/conversations/group", {
       method: "POST",
       token,
-      body: JSON.stringify(requestBodies[0]),
+      body: JSON.stringify(payload.data),
     })
-
-    for (const requestBody of requestBodies.slice(1)) {
-      const error = normalizeApiError(result.body)
-      const isValidationError =
-        (result.response.status === 400 || result.response.status === 422) &&
-        error.code === "VALIDATION_ERROR"
-
-      if (!isValidationError) break
-
-      result = await upstreamRequest("/conversations/group", {
-        method: "POST",
-        token,
-        body: JSON.stringify(requestBody),
-      })
-    }
-
-    const { body, response } = result
     if (!response.ok)
       return Response.json(normalizeApiError(body, "Unable to create group."), {
         status: response.status,

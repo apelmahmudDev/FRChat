@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Field, FieldError, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/toast"
-import { authKeys, login } from "@/features/auth/api/auth"
+import { login } from "@/features/auth/api/auth.api"
+import { authKeys } from "@/features/auth/api/auth.keys"
 import { ApiClientError } from "@/lib/api/error"
 import {
   type SignInFormValues,

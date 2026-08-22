@@ -6,9 +6,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { LoaderCircle, MessageSquarePlus, X } from "lucide-react"
 
 import { toast } from "@/components/ui/toast"
-import { createConversation } from "@/features/messages/api/create-conversation"
-import { userSearchQueryOptions } from "@/features/messages/api/messaging"
-import { conversationKeys } from "@/features/messages/api/query-keys"
+import { createConversation } from "@/features/conversations/api/conversations.api"
+import { conversationKeys } from "@/features/conversations/api/conversations.keys"
+import { userSearchQueryOptions } from "@/features/users/api/users.queries"
 
 type NewConversationDialogProps = {
   open: boolean
@@ -26,7 +26,7 @@ export default function NewConversationDialog({
   const userSearch = useQuery(userSearchQueryOptions(userId.trim()))
 
   const mutation = useMutation({
-    mutationFn: createConversation,
+    mutationFn: (userId: string) => createConversation({ userId }),
     onSuccess: async (conversation) => {
       await queryClient.invalidateQueries({ queryKey: conversationKeys.all })
       onOpenChange(false)

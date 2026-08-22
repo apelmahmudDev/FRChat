@@ -21,11 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
-import {
-  authKeys,
-  currentSessionQueryOptions,
-  logout,
-} from "@/features/auth/api/auth"
+import { logout } from "@/features/auth/api/auth.api"
+import { authKeys } from "@/features/auth/api/auth.keys"
+import { currentSessionQueryOptions } from "@/features/auth/api/auth.queries"
 import type { Conversation } from "@/features/messages/data/conversations"
 
 type ChatHeaderProps = {

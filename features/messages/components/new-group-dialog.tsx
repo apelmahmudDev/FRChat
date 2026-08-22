@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { toast } from "@/components/ui/toast"
-import { createGroup } from "@/features/messages/api/messaging"
-import { conversationKeys } from "@/features/messages/api/query-keys"
+import { createGroup } from "@/features/conversations/api/conversations.api"
+import { conversationKeys } from "@/features/conversations/api/conversations.keys"
 
 export default function NewGroupDialog({
   open,
@@ -22,7 +22,10 @@ export default function NewGroupDialog({
   const [error, setError] = useState<string | null>(null)
   const mutation = useMutation({
     mutationFn: () =>
-      createGroup(name.trim(), memberIds.split(/[\s,]+/).filter(Boolean)),
+      createGroup({
+        name: name.trim(),
+        participantIds: memberIds.split(/[\s,]+/).filter(Boolean),
+      }),
     onSuccess: async ({ _id }) => {
       await queryClient.invalidateQueries({ queryKey: conversationKeys.all })
       toast.add({ title: "Group created", type: "success" })
