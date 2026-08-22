@@ -1,5 +1,7 @@
 # FRChat
 
+![Next.js 16](https://img.shields.io/badge/NEXT.JS-16-111111?style=flat-square&logo=nextdotjs&logoColor=white) ![React 19](https://img.shields.io/badge/REACT-19-149ECA?style=flat-square&logo=react&logoColor=white) ![TypeScript 5](https://img.shields.io/badge/TYPESCRIPT-5-3178C6?style=flat-square&logo=typescript&logoColor=white) ![TanStack Query](https://img.shields.io/badge/TANSTACK-QUERY-FF4154?style=flat-square&logo=reactquery&logoColor=white) ![Socket.IO 4](https://img.shields.io/badge/SOCKET.IO-4-3B3B3B?style=flat-square&logo=socketdotio&logoColor=white) ![Tailwind CSS 4](https://img.shields.io/badge/TAILWIND-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+
 FRChat is a Next.js 16 messaging client backed by a REST API and Socket.IO.
 REST handles authentication, conversation management, history, and message
 persistence. Socket.IO delivers incoming messages and conversation updates to
