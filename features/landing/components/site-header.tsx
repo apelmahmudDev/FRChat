@@ -17,6 +17,7 @@ export default function SiteHeader() {
       <div className="mx-auto flex h-[74px] max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10">
         <Link
           href="/"
+          aria-label="FRChat home"
           className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a8f55]"
         >
           <BrandLogo />

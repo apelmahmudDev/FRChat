@@ -3,13 +3,22 @@ import { ArrowRight, LockKeyhole, Radio, Sparkles } from "lucide-react"
 
 import BrandLogo from "./brand-logo"
 
+const footerLinkClassName =
+  "rounded-sm transition-colors hover:text-[#0a8f55] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a8f55]"
+
 export default function ClosingSection() {
   return (
     <>
       <section className="bg-white px-5 py-16 sm:px-8 sm:py-20 dark:bg-[#0a120e]">
         <div className="relative mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-7 overflow-hidden rounded-[30px] bg-[#dff3e7] px-6 py-8 sm:px-10 lg:flex-row lg:items-center lg:px-12 lg:py-10 dark:bg-[#153b2b]">
-          <div className="absolute -top-20 -right-10 size-56 rounded-full border-[34px] border-white/35" />
-          <div className="absolute right-1/3 bottom-0 h-20 w-20 rounded-full bg-[#c9f35b]/55 blur-2xl" />
+          <div
+            aria-hidden="true"
+            className="absolute -top-20 -right-10 size-56 rounded-full border-[34px] border-white/35"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute right-1/3 bottom-0 h-20 w-20 rounded-full bg-[#c9f35b]/55 blur-2xl"
+          />
           <div className="relative flex items-start gap-4">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#0a8f55] text-white shadow-[0_10px_24px_rgba(10,143,85,0.2)]">
               <Sparkles className="size-5" />
@@ -60,22 +69,13 @@ export default function ClosingSection() {
               Explore
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm font-semibold text-[#68776f] dark:text-[#95a79d]">
-              <a
-                href="#features"
-                className="transition-colors hover:text-[#0a8f55]"
-              >
+              <a href="#features" className={footerLinkClassName}>
                 Features
               </a>
-              <a
-                href="#product"
-                className="transition-colors hover:text-[#0a8f55]"
-              >
+              <a href="#product" className={footerLinkClassName}>
                 How it works
               </a>
-              <a
-                href="#security"
-                className="transition-colors hover:text-[#0a8f55]"
-              >
+              <a href="#security" className={footerLinkClassName}>
                 Security
               </a>
             </div>
@@ -86,17 +86,11 @@ export default function ClosingSection() {
               Get started
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm font-semibold text-[#68776f] dark:text-[#95a79d]">
-              <Link
-                href="/sign-in"
-                className="transition-colors hover:text-[#0a8f55]"
-              >
-                Log in
+              <Link href="/sign-in" className={footerLinkClassName}>
+                Sign in or join
               </Link>
-              <Link
-                href="/sign-in"
-                className="transition-colors hover:text-[#0a8f55]"
-              >
-                Create an account
+              <Link href="/messages" className={footerLinkClassName}>
+                Open messages
               </Link>
             </div>
           </div>

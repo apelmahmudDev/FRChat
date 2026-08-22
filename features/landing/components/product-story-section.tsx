@@ -36,7 +36,11 @@ const flow = [
 
 function ProductScene() {
   return (
-    <div className="relative min-h-[500px] overflow-hidden rounded-[34px] bg-[#123829] p-5 text-white shadow-[0_28px_70px_rgba(18,56,41,0.2)] sm:p-8">
+    <div
+      role="img"
+      aria-label="Illustration of a product team conversation in FRChat"
+      className="relative min-h-[500px] overflow-hidden rounded-[34px] bg-[#123829] p-5 text-white shadow-[0_28px_70px_rgba(18,56,41,0.2)] sm:p-8"
+    >
       <div className="landing-scene-grid absolute inset-0 opacity-30" />
       <div className="absolute -top-24 -right-20 size-72 rounded-full bg-[#77d798]/20 blur-3xl" />
       <div className="absolute -bottom-20 -left-16 size-64 rounded-full bg-[#c9f35b]/15 blur-3xl" />
@@ -138,7 +142,7 @@ export default function ProductStorySection() {
               <Zap className="size-3.5" fill="currentColor" />
               Built for momentum
             </div>
-            <h2 className="mt-5 text-[clamp(2.35rem,4.5vw,4.25rem)] leading-[1.02] font-extrabold tracking-[-0.06em] text-[#14251d] dark:text-[#eef8f1]">
+            <h2 className="mt-5 text-[clamp(2.35rem,4.5vw,4.25rem)] leading-[1.02] font-extrabold tracking-[-0.06em] text-balance text-[#14251d] dark:text-[#eef8f1]">
               Better teamwork starts with a clearer room.
             </h2>
             <p className="mt-6 max-w-[540px] text-base leading-7 text-[#617169] dark:text-[#9cada3]">
@@ -175,9 +179,9 @@ export default function ProductStorySection() {
           <p className="text-center text-xs font-extrabold tracking-[0.16em] text-[#708078] uppercase dark:text-[#84968c]">
             From hello to caught up
           </p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <ol className="mt-8 grid gap-4 md:grid-cols-3">
             {flow.map((step) => (
-              <div
+              <li
                 key={step.number}
                 className="flex gap-4 rounded-2xl bg-white/70 p-5 dark:bg-white/5"
               >
@@ -192,9 +196,9 @@ export default function ProductStorySection() {
                     {step.text}
                   </span>
                 </span>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </div>
     </section>

@@ -1,11 +1,12 @@
 import {
   CheckCheck,
   FileText,
-  Hash,
   Info,
+  MessageCircleMore,
   Paperclip,
   Search,
   Send,
+  SlidersHorizontal,
   Smile,
   Users,
 } from "lucide-react"
@@ -40,14 +41,22 @@ const conversations = [
 function ConversationRail() {
   return (
     <aside className="hidden border-r border-[#173a2a]/8 bg-[#fbfcf8] sm:block dark:border-white/8 dark:bg-[#0f1c16]">
-      <div className="flex h-14 items-center justify-between border-b border-[#173a2a]/8 px-4 dark:border-white/8">
-        <div className="flex items-center gap-2 text-[11px] font-extrabold text-[#153327] dark:text-[#e6f1ea]">
-          <span className="flex size-6 items-center justify-center rounded-lg bg-[#0a8f55] text-white">
-            <Hash className="size-3.5" />
+      <div className="border-b border-[#173a2a]/8 px-3 py-3 dark:border-white/8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-[11px] font-extrabold tracking-[-0.03em] text-[#101b16] dark:text-[#edf6f0]">
+            <span className="flex size-7 items-center justify-center rounded-full bg-[#0a8f55] text-white shadow-sm">
+              <MessageCircleMore className="size-4" />
+            </span>
+            FRChat
+          </div>
+          <span className="flex size-7 items-center justify-center rounded-full bg-[#f0f2ef] text-[#34483e] dark:bg-white/7 dark:text-[#c8d7cf]">
+            <SlidersHorizontal className="size-3.5" />
           </span>
-          Inbox
         </div>
-        <Search className="size-3.5 text-[#718078] dark:text-[#91a198]" />
+        <div className="mt-2.5 flex items-center gap-2 rounded-full bg-[#eef0ed] px-3 py-2 text-[#718078] dark:bg-white/6 dark:text-[#91a198]">
+          <Search className="size-3" />
+          <span className="text-[8px] font-medium">Search conversations</span>
+        </div>
       </div>
       <div className="flex gap-1 px-3 pt-3 text-[8px] font-bold text-[#697870] dark:text-[#91a198]">
         <span className="rounded-full bg-[#dff3e7] px-2.5 py-1 text-[#087348] dark:bg-[#193c29] dark:text-[#71da9a]">
@@ -174,7 +183,8 @@ function MessageThread() {
 export default function ChatPreview() {
   return (
     <div
-      className="relative mx-auto w-full max-w-[720px]"
+      className="relative mx-auto w-full max-w-[980px]"
+      role="img"
       aria-label="Preview of the FRChat messaging experience"
     >
       <div className="absolute -top-5 right-5 z-20 hidden items-center gap-2 rounded-full border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-bold text-[#17382a] shadow-[0_12px_32px_rgba(23,58,42,0.14)] backdrop-blur sm:flex dark:border-white/10 dark:bg-[#16271e]/90 dark:text-[#dce9e1] dark:shadow-[0_12px_32px_rgba(0,0,0,0.25)]">
@@ -190,11 +200,11 @@ export default function ChatPreview() {
             <span className="size-2 rounded-full bg-[#58c985]" />
           </div>
           <span className="rounded-full bg-white px-3 py-1 text-[7px] font-bold tracking-[0.08em] text-[#819087] shadow-sm dark:bg-white/7 dark:text-[#91a198]">
-            app.frchat.co
+            fr-chat.vercel.app
           </span>
           <span className="w-8" />
         </div>
-        <div className="grid min-h-[388px] grid-cols-1 sm:grid-cols-[190px_minmax(0,1fr)]">
+        <div className="grid min-h-[388px] grid-cols-1 sm:grid-cols-[190px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(0,1fr)]">
           <ConversationRail />
           <MessageThread />
         </div>

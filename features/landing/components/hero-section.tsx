@@ -15,12 +15,29 @@ const revealClassName =
 export default function HeroSection() {
   return (
     <section className="landing-hero-surface relative overflow-hidden">
-      <div className="absolute top-16 left-[5%] size-[28rem] rounded-full bg-[#c9f35b]/15 blur-3xl dark:bg-[#80be4d]/8" />
-      <div className="absolute top-16 right-[3%] size-[30rem] rounded-full bg-[#61cb88]/14 blur-3xl dark:bg-[#289a5e]/10" />
-      <div className="landing-dot-grid absolute top-36 -left-16 size-64 text-[#0a8f55]/25 dark:text-[#74d79a]/20" />
-      <div className="landing-dot-grid absolute -right-12 bottom-6 size-52 text-[#0a8f55]/20 dark:text-[#74d79a]/15" />
-      <div className="relative mx-auto grid max-w-[1280px] items-center gap-14 px-5 pt-16 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[0.78fr_1.22fr] lg:gap-12 lg:px-10 lg:pt-24 lg:pb-24">
-        <div className="relative z-10 max-w-[620px]">
+      <div
+        aria-hidden="true"
+        className="absolute -top-16 left-1/2 size-[42rem] -translate-x-1/2 rounded-full bg-[#c9f35b]/14 blur-3xl dark:bg-[#80be4d]/7"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute top-52 left-[8%] size-[26rem] rounded-full bg-[#61cb88]/12 blur-3xl dark:bg-[#289a5e]/8"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute top-52 right-[6%] size-[28rem] rounded-full bg-[#bde9cd]/25 blur-3xl dark:bg-[#17663c]/15"
+      />
+      <div
+        aria-hidden="true"
+        className="landing-dot-grid absolute top-44 -left-20 size-64 text-[#0a8f55]/22 dark:text-[#74d79a]/18"
+      />
+      <div
+        aria-hidden="true"
+        className="landing-dot-grid absolute top-72 -right-16 size-56 text-[#0a8f55]/18 dark:text-[#74d79a]/14"
+      />
+
+      <div className="relative mx-auto max-w-[1280px] px-5 pt-16 sm:px-8 sm:pt-20 lg:px-10 lg:pt-24">
+        <div className="relative z-10 mx-auto max-w-[940px] text-center">
           <div
             className={`${revealClassName} inline-flex items-center gap-2 rounded-full border border-[#0a8f55]/15 bg-white/80 px-3 py-1.5 text-xs font-bold text-[#087348] shadow-sm backdrop-blur dark:border-[#74d79a]/20 dark:bg-[#101f18]/80 dark:text-[#82e0a5]`}
           >
@@ -28,15 +45,15 @@ export default function HeroSection() {
             Conversations that keep up
           </div>
           <h1
-            className={`${revealClassName} mt-6 text-[clamp(3.15rem,6vw,5.6rem)] leading-[0.96] font-extrabold tracking-[-0.065em] text-[#14251d] delay-75 dark:text-[#eef8f1]`}
+            className={`${revealClassName} mt-6 text-[clamp(3.3rem,7vw,6.6rem)] leading-[0.94] font-extrabold tracking-[-0.07em] text-balance text-[#14251d] delay-75 dark:text-[#eef8f1]`}
           >
-            Simple chats.
-            <span className="mt-1 block text-[#0a8f55] dark:text-[#60d78d]">
+            <span className="block">Simple chats.</span>
+            <span className="mt-2 block text-[#0a8f55] dark:text-[#60d78d]">
               Closer teams.
             </span>
           </h1>
           <p
-            className={`${revealClassName} mt-7 max-w-[560px] text-base leading-7 text-[#56675f] delay-150 sm:text-lg sm:leading-8 dark:text-[#a5b6ac]`}
+            className={`${revealClassName} mx-auto mt-7 max-w-[720px] text-base leading-7 text-[#56675f] delay-150 sm:text-lg sm:leading-8 dark:text-[#a5b6ac]`}
           >
             Find people, start direct or group conversations, and stay in sync
             as messages arrive. FRChat keeps the whole exchange in one calm,
@@ -44,7 +61,7 @@ export default function HeroSection() {
           </p>
 
           <div
-            className={`${revealClassName} mt-8 flex flex-col gap-3 delay-200 sm:flex-row`}
+            className={`${revealClassName} mt-8 flex flex-col justify-center gap-3 delay-200 sm:flex-row`}
           >
             <Link
               href="/sign-in"
@@ -62,11 +79,11 @@ export default function HeroSection() {
             </a>
           </div>
 
-          <div
-            className={`${revealClassName} mt-8 flex flex-wrap gap-x-5 gap-y-2 delay-200`}
+          <ul
+            className={`${revealClassName} mt-7 flex flex-wrap justify-center gap-x-5 gap-y-2 delay-200`}
           >
             {reassurance.map((item) => (
-              <span
+              <li
                 key={item}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#66766e] dark:text-[#9daea4]"
               >
@@ -74,14 +91,29 @@ export default function HeroSection() {
                   <Check className="size-2.5" strokeWidth={3} />
                 </span>
                 {item}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
 
-        <div className={`${revealClassName} relative delay-150 lg:-mr-16`}>
-          <div className="absolute top-[8%] left-[8%] -z-10 h-[82%] w-[82%] rounded-full bg-[#bde9cd]/50 blur-3xl dark:bg-[#17663c]/30" />
-          <ChatPreview />
+        <div
+          className={`${revealClassName} relative mx-auto mt-12 h-[290px] max-w-[1040px] overflow-hidden px-1 pt-6 delay-300 sm:mt-14 sm:h-[330px] sm:px-4 lg:h-[360px]`}
+        >
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-[12%] top-12 h-56 rounded-full bg-[#75d599]/25 blur-3xl dark:bg-[#1d7948]/25"
+          />
+          <div className="relative z-10">
+            <ChatPreview />
+          </div>
+          <div className="landing-preview-fade pointer-events-none absolute inset-x-0 bottom-0 z-20 h-40 sm:h-48" />
+          <div className="absolute inset-x-0 bottom-5 z-30 flex items-center justify-center gap-3 text-[10px] font-extrabold tracking-[0.12em] text-white/75 uppercase sm:bottom-7 sm:gap-5 sm:text-[11px]">
+            <span>Direct chats</span>
+            <span className="size-1 rounded-full bg-[#78e7a3]" />
+            <span>Groups</span>
+            <span className="size-1 rounded-full bg-[#78e7a3]" />
+            <span>Live updates</span>
+          </div>
         </div>
       </div>
     </section>

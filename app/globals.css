@@ -163,6 +163,16 @@
     background: linear-gradient(180deg, #101d17 0%, #0d1812 48%);
   }
 
+  .landing-preview-fade {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgb(8 20 13 / 10%) 18%,
+      rgb(8 20 13 / 78%) 68%,
+      #08140d 100%
+    );
+  }
+
   .landing-scene-grid {
     background-image:
       linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),

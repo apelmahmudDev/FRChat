@@ -29,10 +29,10 @@ const capabilities = [
   },
   {
     icon: ShieldCheck,
-    title: "A safer session",
+    title: "Protected by design",
     description:
-      "Authentication stays behind secure server routes instead of leaking into the browser.",
-    detail: "HttpOnly auth",
+      "Your sign-in session stays protected while conversations move through trusted server routes.",
+    detail: "Secure access",
     id: "security",
   },
 ] as const
