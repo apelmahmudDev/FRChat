@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { hasAuthSessionCookie } from "@/features/auth/lib/auth-cookie"
 import CapabilitiesSection from "@/features/landing/components/capabilities-section"
 import ClosingSection from "@/features/landing/components/closing-section"
 import HeroSection from "@/features/landing/components/hero-section"
@@ -20,15 +21,17 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Page() {
+export default async function Page() {
+  const hasSession = await hasAuthSessionCookie()
+
   return (
     <div className="landing-page min-h-screen overflow-clip bg-[#f7f8f2] text-[#14251d] selection:bg-[#c9f35b] selection:text-[#14251d] dark:bg-[#08110d] dark:text-[#eef8f1]">
-      <SiteHeader />
+      <SiteHeader hasSession={hasSession} />
       <main>
-        <HeroSection />
+        <HeroSection hasSession={hasSession} />
         <CapabilitiesSection />
-        <ProductStorySection />
-        <ClosingSection />
+        <ProductStorySection hasSession={hasSession} />
+        <ClosingSection hasSession={hasSession} />
       </main>
     </div>
   )

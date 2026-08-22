@@ -37,87 +37,108 @@ The browser never receives the upstream REST base URL or stores the access
 token. Route handlers read the HttpOnly session cookie and proxy authenticated
 requests to the upstream service.
 
-## Part 3 - Thought Process Write-up
+## Part 3: Thought Process Write-up
 
-### Part 1: Architecture and approach
+### Overview
 
-I used the Next.js App Router as both the UI framework and a small
-backend-for-frontend. Server route handlers validate requests, attach the
-HttpOnly session token, normalize upstream errors, and keep the REST API URL out
-of the client bundle. The browser requests the token only in memory when it
-opens the Socket.IO connection; it is never written to browser storage. This
-adds a server hop and some duplicate boundary schemas, but the security and
-consistent client-facing contract were worthwhile trade-offs.
+My goal was to build a messaging client that feels responsive while keeping the
+codebase secure, predictable, and easy to maintain. I separated server data,
+realtime events, and temporary UI state instead of managing all three through a
+single state layer. I also kept the landing page visually connected to the chat
+product rather than treating it as a separate template.
 
-The code is organized by feature so authentication, conversations, messages,
-users, realtime behavior, and landing-page UI can evolve independently.
-TanStack Query owns remote state and cache invalidation, while short-lived UI
-state remains local to components. Server Components provide the initial
-conversation list, Zod validates form and network boundaries, and Socket.IO
-updates or invalidates Query caches as events arrive. Optimistic message writes
-make sending feel immediate, with rollback on failure and cache reconciliation
-when the canonical socket message arrives. The main compromise is that, without
-an upstream client-generated message ID, matching an optimistic message by
-sender and text is best-effort.
+### 1. Architecture, libraries, and trade-offs
 
-### Part 2: Landing-page design
+I used the Next.js App Router for the interface and as a small
+backend-for-frontend layer. Its route handlers validate requests, attach the
+HttpOnly session cookie, normalize upstream errors, and prevent the REST API
+base URL from being exposed in the client bundle. The Socket.IO token is held
+only in memory while the connection is active and is never stored in local or
+session storage.
 
-The landing page uses a calm green and warm neutral palette to make a busy chat
-product feel focused rather than noisy. Large, tightly tracked headings create
-a clear hierarchy, while rounded surfaces, restrained shadows, dot patterns,
-and a handcrafted product scene give the page its own visual identity without
-depending on stock imagery. The single-column hero introduces the value first,
-then reveals a cropped version of the actual chat interface with a dark fade so
-the product remains the focal point without dominating the page.
+The main trade-off is an additional server hop and some repeated validation at
+system boundaries. I accepted that cost because it provides safer token
+handling and gives the browser one consistent API contract.
 
-The sections are split into focused components and styled primarily with
-Tailwind; only masks and layered gradients remain in global CSS. Responsive
-layouts, keyboard focus states, light/dark/system themes, semantic structure,
-and reduced-motion fallbacks were included from the start. I intentionally
-avoided generic testimonials and FAQ blocks because they would add length
-without demonstrating the implemented product.
+The application is organized by feature so authentication, users,
+conversations, messages, realtime behavior, and landing-page components can be
+changed independently. The main library choices were:
 
-### AI usage
+- **TanStack Query** for server state, caching, pagination, invalidation, and
+  optimistic updates.
+- **Socket.IO** for incoming messages and conversation updates.
+- **Zod** for validating forms and normalizing inconsistent REST and socket
+  payloads.
+- **Tailwind CSS** for responsive styling without creating large component-level
+  stylesheets.
+- **Server Components** for the initial conversation data, reducing unnecessary
+  client-side loading work.
 
-OpenAI Codex was used as a pair-programming assistant for repository analysis,
-implementation and refactoring, debugging the Base UI theme menu, iterating on
-the landing-page design, running verification commands, and drafting this
-summary. Its suggestions were not accepted wholesale: unnecessary CSS files,
-extra abstractions, and generic landing-page patterns were rejected or removed;
-the final code and wording were checked against the supplied brief, the actual
-API boundaries, and browser renders. Madagascar is included here only because
-the assignment explicitly requested it, not because it influenced a technical
-decision.
+When a user sends a message, the UI creates an optimistic entry, rolls it back
+if the request fails, and reconciles it when the confirmed socket event arrives.
+This makes the interface feel immediate. However, the API does not provide a
+client-generated message ID, so matching an optimistic message by sender and
+text remains a best-effort solution.
 
-### Improvements with more time
+### 2. Design reasoning
 
-I would add Vitest and React Testing Library coverage for schemas, cache
-reconciliation, and forms, plus Playwright tests for sign-in, conversation
-creation, sending, and reconnect behavior. The message list should implement a
-true near-bottom rule with a "jump to latest" control instead of following every
-new message. I would also add stronger dialog focus management, a visible socket
-connection status, broader device and accessibility testing, and idempotent
-message creation if the API gains a client message ID.
+I chose a calm green and warm neutral palette because messaging interfaces
+already contain many competing elements. The restrained colors, spacing, and
+shadows help the page feel focused without using the common blue appearance of
+many chat products.
 
-### API issues and workarounds
+The hero follows a single-column structure: the message and actions appear
+first, followed by a cropped preview of the real chat interface. A dark fade
+limits the preview's visual height, allowing visitors to understand the product
+without letting the mockup dominate the page. Large headings establish the
+main hierarchy, while rounded surfaces and subtle dot patterns add character
+without relying on stock imagery.
 
-- Message history was not represented by one stable shape. Responses could be a
-  direct array or place messages under `data`, `messages`, or `data.messages`,
-  while pagination used `nextCursor` or `nextBefore` with an optional
-  `hasMore`. The proxy normalizes these into one `{ data, nextCursor, hasMore }`
-  contract.
-- Socket messages could be direct or wrapped in `message`/`data`, and equivalent
-  fields used different names such as `_id`/`id`,
-  `conversationId`/`conversation`, and `text`/`content`. Sender and timestamp
-  values also varied. Zod transforms valid variants; incomplete identifiable
-  events trigger a history refetch instead of being inserted blindly.
-- Direct conversations exposed a singular `participant`, while groups used
-  `participants`. A server-side mapper converts both into the same internal
-  participant model before rendering.
-- The successful send-message response body was not reliable enough to treat as
-  the canonical message. The proxy treats any successful status as an
-  acknowledgement, returns `{ ok: true }`, and lets optimistic state plus the
-  socket event or later history fetch provide the final message.
-- Error bodies could use `message`, a string `error`, or a nested error object.
-  A shared normalizer preserves the upstream HTTP status and presents one safe
-  message/code shape to the UI.
+I split the page into focused components and used global CSS only for effects
+that are difficult to express clearly with utilities, such as masks and layered
+gradients. The implementation also includes responsive layouts, semantic HTML,
+keyboard focus states, light/dark/system themes, and reduced-motion fallbacks.
+I left out generic testimonials and FAQ sections because they would increase
+the page length without demonstrating the implemented product.
+
+### 3. Use of AI tools
+
+I used OpenAI Codex as a development assistant for repository analysis,
+boilerplate, refactoring suggestions, debugging the Base UI theme menu,
+reviewing API integration, iterating on the landing-page design, running
+verification commands, and helping draft this write-up.
+
+I did not accept its output without review. I rejected or removed unnecessary
+CSS files, premature abstractions, and generic landing-page sections. I checked
+the remaining code against the assignment brief, the observed API behavior,
+TypeScript and lint results, and browser renders. I made the final decisions on
+the architecture, UI direction, component boundaries, and wording. Madagascar
+is included to satisfy the explicit instruction in the assignment document.
+
+### 4. What I would improve with more time
+
+- Add unit and component tests with Vitest and React Testing Library for Zod
+  schemas, forms, optimistic updates, and cache reconciliation.
+- Add Playwright tests for sign-in, conversation creation, message sending, and
+  socket reconnection.
+- Improve message scrolling with a true near-bottom check and a **Jump to
+  latest** control.
+- Add clearer socket connection and reconnection status.
+- Strengthen dialog focus management and test accessibility across more devices
+  and assistive technologies.
+- Use idempotent message creation if the API later supports client-generated
+  message IDs.
+
+### 5. API issues and workarounds
+
+| Issue observed | How I handled it |
+| --- | --- |
+| Message history appeared as a direct array or under `data`, `messages`, or `data.messages`. Pagination also used `nextCursor` or `nextBefore`, sometimes with `hasMore`. | The proxy converts these variants into one `{ data, nextCursor, hasMore }` response. |
+| Socket payloads could be direct or wrapped in `message`/`data`. Equivalent fields also used names such as `_id`/`id`, `conversationId`/`conversation`, and `text`/`content`. | Zod schemas transform recognized variants into one internal shape. If an event is identifiable but incomplete, the client refetches message history instead of inserting uncertain data. |
+| Direct conversations used a singular `participant`, while group conversations used `participants`. | A server-side mapper converts both responses into one participant model before rendering. |
+| The successful send-message response was not reliable enough to use as the final message object. | The proxy treats a successful status as acknowledgement and returns `{ ok: true }`. The optimistic entry is later reconciled by the socket event or a history refetch. |
+| Error bodies used inconsistent forms, including `message`, a string `error`, or a nested error object. | A shared error normalizer preserves the upstream status while returning one safe message and code shape to the UI. |
+
+These inconsistencies did not block the implementation, but they required a
+normalization layer so UI components would not depend on every possible
+upstream response shape.

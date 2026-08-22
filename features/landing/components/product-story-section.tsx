@@ -127,7 +127,13 @@ function ProductScene() {
   )
 }
 
-export default function ProductStorySection() {
+type ProductStorySectionProps = {
+  hasSession: boolean
+}
+
+export default function ProductStorySection({
+  hasSession,
+}: ProductStorySectionProps) {
   return (
     <section
       id="product"
@@ -166,10 +172,10 @@ export default function ProductStorySection() {
             </div>
 
             <Link
-              href="/sign-in"
+              href={hasSession ? "/messages" : "/sign-in"}
               className="group mt-8 inline-flex items-center gap-2 text-sm font-extrabold text-[#0a8f55] focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a8f55]"
             >
-              Open FRChat
+              {hasSession ? "Open messages" : "Open FRChat"}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>

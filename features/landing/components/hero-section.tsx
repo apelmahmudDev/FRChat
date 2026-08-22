@@ -3,8 +3,14 @@ import { ArrowDownRight, ArrowRight, Check, Sparkles } from "lucide-react"
 
 import ChatPreview from "./chat-preview"
 
-const reassurance = [
+const guestReassurance = [
   "No registration detour",
+  "Live message delivery",
+  "Private session",
+] as const
+
+const memberReassurance = [
+  "Session ready",
   "Live message delivery",
   "Private session",
 ] as const
@@ -12,7 +18,14 @@ const reassurance = [
 const revealClassName =
   "animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both ease-out motion-reduce:animate-none"
 
-export default function HeroSection() {
+type HeroSectionProps = {
+  hasSession: boolean
+}
+
+export default function HeroSection({ hasSession }: HeroSectionProps) {
+  const chatHref = hasSession ? "/messages" : "/sign-in"
+  const reassurance = hasSession ? memberReassurance : guestReassurance
+
   return (
     <section className="landing-hero-surface relative overflow-hidden">
       <div
@@ -42,7 +55,9 @@ export default function HeroSection() {
             className={`${revealClassName} inline-flex items-center gap-2 rounded-full border border-[#0a8f55]/15 bg-white/80 px-3 py-1.5 text-xs font-bold text-[#087348] shadow-sm backdrop-blur dark:border-[#74d79a]/20 dark:bg-[#101f18]/80 dark:text-[#82e0a5]`}
           >
             <Sparkles className="size-3.5" />
-            Conversations that keep up
+            {hasSession
+              ? "Your conversations are ready"
+              : "Conversations that keep up"}
           </div>
           <h1
             className={`${revealClassName} mt-6 text-[clamp(3.3rem,7vw,6.6rem)] leading-[0.94] font-extrabold tracking-[-0.07em] text-balance text-[#14251d] delay-75 dark:text-[#eef8f1]`}
@@ -64,10 +79,10 @@ export default function HeroSection() {
             className={`${revealClassName} mt-8 flex flex-col justify-center gap-3 delay-200 sm:flex-row`}
           >
             <Link
-              href="/sign-in"
+              href={chatHref}
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[#0a8f55] px-6 text-sm font-extrabold text-white shadow-[0_12px_28px_rgba(10,143,85,0.22)] transition hover:-translate-y-0.5 hover:bg-[#087a49] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0a8f55]"
             >
-              Start a conversation
+              {hasSession ? "Open messages" : "Start a conversation"}
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <a

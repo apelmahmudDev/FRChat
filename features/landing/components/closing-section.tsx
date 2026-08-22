@@ -6,7 +6,13 @@ import BrandLogo from "./brand-logo"
 const footerLinkClassName =
   "rounded-sm transition-colors hover:text-[#0a8f55] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a8f55]"
 
-export default function ClosingSection() {
+type ClosingSectionProps = {
+  hasSession: boolean
+}
+
+export default function ClosingSection({ hasSession }: ClosingSectionProps) {
+  const chatHref = hasSession ? "/messages" : "/sign-in"
+
   return (
     <>
       <section className="bg-white px-5 py-16 sm:px-8 sm:py-20 dark:bg-[#0a120e]">
@@ -25,19 +31,22 @@ export default function ClosingSection() {
             </span>
             <div>
               <h2 className="text-2xl font-extrabold tracking-[-0.035em] text-[#153126] sm:text-3xl dark:text-[#eef8f1]">
-                Ready for a calmer conversation?
+                {hasSession
+                  ? "Ready to pick up where you left off?"
+                  : "Ready for a calmer conversation?"}
               </h2>
               <p className="mt-2 max-w-[630px] text-sm leading-6 text-[#50675b] dark:text-[#b5c8bd]">
-                Sign in with your name and phone number, then find the person or
-                group you want to reach.
+                {hasSession
+                  ? "Your conversations and groups are ready when you are."
+                  : "Sign in with your name and phone number, then find the person or group you want to reach."}
               </p>
             </div>
           </div>
           <Link
-            href="/sign-in"
+            href={chatHref}
             className="group relative inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[#0a8f55] px-6 text-sm font-extrabold text-white shadow-[0_12px_26px_rgba(10,143,85,0.2)] transition hover:-translate-y-0.5 hover:bg-[#087a49] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#0a8f55]"
           >
-            Start chatting
+            {hasSession ? "Open messages" : "Start chatting"}
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
@@ -83,14 +92,11 @@ export default function ClosingSection() {
 
           <div>
             <p className="text-xs font-extrabold tracking-[0.12em] text-[#20342a] uppercase dark:text-[#e3eee7]">
-              Get started
+              {hasSession ? "Continue" : "Get started"}
             </p>
             <div className="mt-4 flex flex-col items-start gap-3 text-sm font-semibold text-[#68776f] dark:text-[#95a79d]">
-              <Link href="/sign-in" className={footerLinkClassName}>
-                Sign in or join
-              </Link>
-              <Link href="/messages" className={footerLinkClassName}>
-                Open messages
+              <Link href={chatHref} className={footerLinkClassName}>
+                {hasSession ? "Open messages" : "Sign in or join"}
               </Link>
             </div>
           </div>

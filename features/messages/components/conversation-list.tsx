@@ -84,12 +84,18 @@ export default function ConversationList({
     <aside className="hidden w-[350px] shrink-0 flex-col border-r bg-card lg:flex">
       <div className="space-y-3 border-b px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex shrink-0 items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <Link
+            href="/"
+            aria-label="FRChat home"
+            className="group flex shrink-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
+          >
+            <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
               <MessageCircleMore className="size-5" />
             </span>
-            <span className="text-xl font-bold tracking-tight">FRChat</span>
-          </div>
+            <span className="text-xl font-bold tracking-tight transition-colors group-hover:text-primary">
+              FRChat
+            </span>
+          </Link>
           <DropdownMenu>
             <IconTooltip label="Filter conversations">
               <DropdownMenuTrigger

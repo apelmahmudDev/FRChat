@@ -1,7 +1,9 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 import { APP_CONFIG } from "@/constants/app-config"
 import SignInForm from "@/features/auth/components/sign-in-form"
 import BrandPanel from "@/features/auth/components/brand-panel"
+import { hasAuthSessionCookie } from "@/features/auth/lib/auth-cookie"
 
 const signInTitle = `${APP_CONFIG.name} | Sign in`
 
@@ -30,6 +32,10 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     !requestedDestination.startsWith("//")
       ? requestedDestination
       : "/messages"
+
+  if (await hasAuthSessionCookie()) {
+    redirect(redirectTo)
+  }
 
   return (
     <main className="min-h-screen bg-background">
