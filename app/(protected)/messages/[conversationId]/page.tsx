@@ -1,7 +1,5 @@
-import { notFound } from "next/navigation"
-
 import ChatView from "@/features/messages/components/chat-view"
-import { getConversationById } from "@/features/messages/data/conversations"
+import { getConversations } from "@/features/messages/api/conversations"
 
 type ConversationPageProps = {
   params: Promise<{ conversationId: string }>
@@ -11,11 +9,14 @@ export default async function ConversationPage({
   params,
 }: ConversationPageProps) {
   const { conversationId } = await params
-  const conversation = getConversationById(conversationId)
+  const conversations = await getConversations()
+  const conversation = conversations.find(({ id }) => id === conversationId)
 
-  if (!conversation) {
-    notFound()
-  }
-
-  return <ChatView conversation={conversation} />
+  return (
+    <ChatView
+      conversations={conversations}
+      conversation={conversation ?? null}
+      variant={conversations.length === 0 ? "empty" : "not-found"}
+    />
+  )
 }

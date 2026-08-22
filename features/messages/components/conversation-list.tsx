@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
-import { conversations } from "@/features/messages/data/conversations"
+import type { Conversation } from "@/features/messages/data/conversations"
 
 const avatarColors = [
   "bg-emerald-100 text-emerald-800",
@@ -40,20 +40,43 @@ const filters = ["All", "Unread", "Direct", "Groups"] as const
 type ConversationFilter = (typeof filters)[number]
 
 type ConversationListProps = {
-  selectedConversationId: string
+  conversations: readonly Conversation[]
+  selectedConversationId?: string | null
 }
 
 export default function ConversationList({
+  conversations,
   selectedConversationId,
 }: ConversationListProps) {
   const [activeFilter, setActiveFilter] = useState<ConversationFilter>("All")
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase()
 
   const filteredConversations = conversations.filter((conversation) => {
-    if (activeFilter === "Unread") return Boolean(conversation.unread)
-    if (activeFilter === "Groups") return Boolean(conversation.group)
-    if (activeFilter === "Direct") return !conversation.group
-    return true
+    const matchesFilter =
+      activeFilter === "All" ||
+      (activeFilter === "Unread" && Boolean(conversation.unread)) ||
+      (activeFilter === "Groups" && Boolean(conversation.group)) ||
+      (activeFilter === "Direct" && !conversation.group)
+    const matchesSearch =
+      normalizedSearchTerm.length === 0 ||
+      conversation.name.toLowerCase().includes(normalizedSearchTerm) ||
+      conversation.preview.toLowerCase().includes(normalizedSearchTerm)
+
+    return matchesFilter && matchesSearch
   })
+
+  const isEmptyList = conversations.length === 0
+  const isNoResults = !isEmptyList && filteredConversations.length === 0
+  const emptyTitle = isEmptyList
+    ? "No conversations yet"
+    : "No conversations found"
+  const emptyDescription = isEmptyList
+    ? "Start a new chat and it will appear here."
+    : normalizedSearchTerm
+      ? "Try a different search term or clear the filter."
+      : "Try a different filter to surface more conversations."
 
   return (
     <aside className="hidden w-[350px] shrink-0 flex-col border-r bg-card lg:flex">
@@ -113,6 +136,8 @@ export default function ConversationList({
             type="search"
             placeholder="Search conversations"
             aria-label="Search conversations"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </label>
@@ -132,55 +157,79 @@ export default function ConversationList({
       </nav>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-1 pt-3 pb-1">
-        {filteredConversations.map((conversation, index) => (
-          <Link
-            href={`/messages/${conversation.id}`}
-            scroll={false}
-            key={conversation.name}
-            aria-current={
-              selectedConversationId === conversation.id ? "page" : undefined
-            }
-            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left transition ${selectedConversationId === conversation.id ? "bg-primary/8" : "hover:bg-muted/70"}`}
-          >
-            <span
-              className={`relative flex size-11 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarColors[index % avatarColors.length]}`}
+        {filteredConversations.length > 0 ? (
+          filteredConversations.map((conversation, index) => (
+            <Link
+              href={`/messages/${conversation.id}`}
+              scroll={false}
+              key={conversation.id}
+              aria-current={
+                selectedConversationId === conversation.id ? "page" : undefined
+              }
+              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3.5 text-left transition ${selectedConversationId === conversation.id ? "bg-primary/8" : "hover:bg-muted/70"}`}
             >
-              {conversation.group ? (
-                <Users className="size-5" />
-              ) : conversation.company ? (
-                <Building2 className="size-5" />
-              ) : (
-                conversation.initials
-              )}
-              {index < 2 && (
-                <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-emerald-500" />
-              )}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1.5">
-                <span className="truncate text-sm font-semibold">
-                  {conversation.name}
-                </span>
-                {conversation.group && (
-                  <Sprout className="size-3.5 shrink-0 text-primary" />
+              <span
+                className={`relative flex size-11 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarColors[index % avatarColors.length]}`}
+              >
+                {conversation.group ? (
+                  <Users className="size-5" />
+                ) : conversation.company ? (
+                  <Building2 className="size-5" />
+                ) : (
+                  conversation.initials
                 )}
-                <span className="ml-auto shrink-0 text-[11px] font-normal text-muted-foreground">
-                  {conversation.time}
-                </span>
+                {index < 2 && (
+                  <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-emerald-500" />
+                )}
               </span>
-              <span className="mt-1 flex items-center gap-2">
-                <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                  {conversation.preview}
-                </span>
-                {conversation.unread && (
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
-                    {conversation.unread}
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-semibold">
+                    {conversation.name}
                   </span>
-                )}
+                  {conversation.group && (
+                    <Sprout className="size-3.5 shrink-0 text-primary" />
+                  )}
+                  <span className="ml-auto shrink-0 text-[11px] font-normal text-muted-foreground">
+                    {conversation.time}
+                  </span>
+                </span>
+                <span className="mt-1 flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                    {conversation.preview}
+                  </span>
+                  {conversation.unread && (
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
+                      {conversation.unread}
+                    </span>
+                  )}
+                </span>
               </span>
-            </span>
-          </Link>
-        ))}
+            </Link>
+          ))
+        ) : (
+          <div className="flex min-h-[50svh] flex-col items-center justify-center px-8 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <MessageCircleMore className="size-6" />
+            </div>
+            <h3 className="mt-4 text-sm font-semibold">{emptyTitle}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {emptyDescription}
+            </p>
+            {isNoResults && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveFilter("All")
+                  setSearchTerm("")
+                }}
+                className="mt-4 rounded-full bg-primary/10 px-4 py-2 text-xs font-medium text-primary transition hover:bg-primary/15"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   )
