@@ -6,6 +6,7 @@ import type {
   CreateConversationPayload,
   CreateGroupPayload,
 } from "../types/conversation.types"
+import { conversationSchema } from "../types/conversation.types"
 
 const createdConversationSchema = z.object({
   _id: z.string().min(1),
@@ -14,6 +15,16 @@ const createdConversationSchema = z.object({
 })
 const createdGroupSchema = z.object({ _id: z.string().min(1) })
 const mutationResponseSchema = z.unknown()
+const conversationListSchema = z.object({
+  data: z.array(conversationSchema),
+})
+
+export function getConversations() {
+  return clientApiRequest("/api/conversations", {
+    method: "GET",
+    schema: conversationListSchema,
+  }).then(({ data }) => data)
+}
 
 export function createConversation(payload: CreateConversationPayload) {
   return clientApiRequest("/api/conversations", {

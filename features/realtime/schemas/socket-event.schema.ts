@@ -54,10 +54,3 @@ export const socketMessageEventSchema = z
     if ("data" in payload) return payload.data as SocketMessageEvent
     return payload as SocketMessageEvent
   })
-
-export const socketConversationEventSchema = z
-  .object({
-    _id: z.string().min(1).optional(),
-    id: z.string().min(1).optional(),
-  })
-  .loose()

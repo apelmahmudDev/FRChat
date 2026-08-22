@@ -2,6 +2,7 @@ import { cookies } from "next/headers"
 import { z } from "zod"
 
 import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
+import { getServerConversations } from "@/features/conversations/api/conversations.server"
 import { normalizeApiError } from "@/lib/api/error"
 import { upstreamRequest } from "@/lib/api/server"
 
@@ -16,6 +17,22 @@ const upstreamCreatedConversationSchema = z
     createdAt: z.iso.datetime(),
   })
   .loose()
+
+export async function GET() {
+  try {
+    return Response.json({ data: await getServerConversations() })
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "The conversations service is currently unavailable."
+
+    return Response.json(
+      { message },
+      { status: message === "Authentication required." ? 401 : 503 }
+    )
+  }
+}
 
 export async function POST(request: Request) {
   const payload = createConversationSchema.safeParse(

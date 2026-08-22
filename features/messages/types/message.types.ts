@@ -9,3 +9,14 @@ export const chatMessageSchema = z.object({
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>
 export type SendMessagePayload = { conversationId: string; text: string }
+
+export type MessagePage = {
+  data: ChatMessage[]
+  nextCursor: string | null
+  hasMore: boolean
+}
+
+export type MessageHistory = {
+  pages: MessagePage[]
+  pageParams: unknown[]
+}

@@ -1,7 +1,7 @@
 import { Sprout, X } from "lucide-react"
 
 import { IconTooltip } from "@/components/ui/icon-tooltip"
-import type { Conversation } from "@/features/messages/data/conversations"
+import type { Conversation } from "@/features/conversations/types/conversation.types"
 
 import GroupManagement from "./group-management"
 
@@ -31,7 +31,9 @@ export default function InfoPanel({ conversation, onClose }: InfoPanelProps) {
           <div>
             <div className="flex items-center gap-1.5">
               <h3 className="font-semibold">{conversation.name}</h3>
-              {conversation.group && <Sprout className="size-4 text-primary" />}
+              {conversation.type === "group" && (
+                <Sprout className="size-4 text-primary" />
+              )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               {conversation.members
@@ -43,13 +45,15 @@ export default function InfoPanel({ conversation, onClose }: InfoPanelProps) {
       </div>
       <section className="border-b px-6 py-5">
         <h3 className="text-sm font-semibold">
-          Members ({conversation.members ?? 2})
+          {conversation.type === "group"
+            ? `Members (${conversation.members ?? 0})`
+            : "Contact"}
         </h3>
         <div className="mt-4 flex flex-wrap gap-2">
           {conversation.participants?.map((member) => (
             <span
               key={member.id}
-              title={`${member.name} · ${member.phone}`}
+              title={`${member.name} - ${member.phone}`}
               className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary"
             >
               {member.name.slice(0, 2).toUpperCase()}
@@ -57,7 +61,9 @@ export default function InfoPanel({ conversation, onClose }: InfoPanelProps) {
           ))}
         </div>
       </section>
-      {conversation.group && <GroupManagement conversation={conversation} />}
+      {conversation.type === "group" && (
+        <GroupManagement conversation={conversation} />
+      )}
     </aside>
   )
 }

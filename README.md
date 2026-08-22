@@ -1,21 +1,36 @@
-# Next.js template
+# FRChat
 
-This is a Next.js template with shadcn/ui.
+FRChat is a Next.js 16 messaging client backed by a REST API and Socket.IO.
+REST handles authentication, conversation management, history, and message
+persistence. Socket.IO delivers incoming messages and conversation updates to
+TanStack Query caches in real time.
 
-## Adding components
+## Local development
 
-To add components to your app, run the following command:
+Create `.env.local` from `.env.example`, then run:
 
 ```bash
-npx shadcn@latest add button
+pnpm install
+pnpm dev
 ```
 
-This will place the ui components in the `components` directory.
+The application is available at `http://localhost:3000`.
 
-## Using components
+## Verification
 
-To use the components in your app, import them as follows:
-
-```tsx
-import { Button } from "@/components/ui/button";
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
 ```
+
+## Structure
+
+- `app/` contains pages and backend-for-frontend route handlers.
+- `features/` contains domain APIs, schemas, types, and UI.
+- `providers/` owns application-wide query, theme, and realtime lifecycles.
+- `components/ui/` contains only shared primitives currently used by the app.
+
+The browser never receives the upstream REST base URL or stores the access
+token. Route handlers read the HttpOnly session cookie and proxy authenticated
+requests to the upstream service.

@@ -13,7 +13,7 @@ import {
   renameGroup,
 } from "@/features/conversations/api/conversations.api"
 import { conversationKeys } from "@/features/conversations/api/conversations.keys"
-import type { Conversation } from "@/features/messages/data/conversations"
+import type { Conversation } from "@/features/conversations/types/conversation.types"
 
 export default function GroupManagement({
   conversation,

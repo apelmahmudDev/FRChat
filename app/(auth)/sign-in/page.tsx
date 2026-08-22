@@ -35,10 +35,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     <main className="min-h-screen bg-background">
       <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center p-6">
         <div className="grid w-full overflow-hidden rounded-3xl border border-border/60 bg-card shadow-2xl lg:grid-cols-2">
-          {/* Left Branding */}
           <BrandPanel />
 
-          {/* Right Login */}
           <section className="flex items-center justify-center p-6 sm:p-10 lg:p-14">
             <SignInForm redirectTo={redirectTo} />
           </section>

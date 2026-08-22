@@ -7,9 +7,16 @@ import { upstreamRequest } from "@/lib/api/server"
 
 const createGroupSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  participantIds: z.array(z.string().min(1)).min(1).max(100),
+  participantIds: z
+    .array(z.string().min(1))
+    .min(1)
+    .max(100)
+    .transform((participantIds) => [...new Set(participantIds)]),
 })
-const createdGroupSchema = z.object({ _id: z.string().min(1) }).loose()
+const groupSchema = z.object({ _id: z.string().min(1) }).loose()
+const createdGroupSchema = z
+  .union([groupSchema, z.object({ data: groupSchema }).loose()])
+  .transform((response) => ("data" in response ? response.data : response))
 
 export async function POST(request: Request) {
   const payload = createGroupSchema.safeParse(

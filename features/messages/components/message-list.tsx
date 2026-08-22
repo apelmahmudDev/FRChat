@@ -5,8 +5,8 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import { LoaderCircle, RefreshCw } from "lucide-react"
 
 import { currentSessionQueryOptions } from "@/features/auth/api/auth.queries"
+import type { Conversation } from "@/features/conversations/types/conversation.types"
 import { messageHistoryQueryOptions } from "@/features/messages/api/messages.queries"
-import type { Conversation } from "@/features/messages/data/conversations"
 
 function formatMessageTime(value: string) {
   const date = new Date(value)

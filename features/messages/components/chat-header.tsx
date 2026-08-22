@@ -1,13 +1,4 @@
-import {
-  ChevronDown,
-  CircleUserRound,
-  Info,
-  LogOut,
-  Phone,
-  Settings,
-  Sprout,
-  Video,
-} from "lucide-react"
+import { ChevronDown, Info, LogOut, Sprout } from "lucide-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 
@@ -21,10 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
+import { toast } from "@/components/ui/toast"
 import { logout } from "@/features/auth/api/auth.api"
 import { authKeys } from "@/features/auth/api/auth.keys"
 import { currentSessionQueryOptions } from "@/features/auth/api/auth.queries"
-import type { Conversation } from "@/features/messages/data/conversations"
+import type { Conversation } from "@/features/conversations/types/conversation.types"
 
 type ChatHeaderProps = {
   conversation: Conversation
@@ -44,9 +36,16 @@ export default function ChatHeader({
     mutationKey: [...authKeys.all, "logout"],
     mutationFn: logout,
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: authKeys.all })
+      queryClient.clear()
       router.replace("/sign-in")
       router.refresh()
+    },
+    onError: (error: Error) => {
+      toast.add({
+        title: "Unable to sign out",
+        description: error.message,
+        type: "error",
+      })
     },
   })
   const profileName = session?.user.name ?? "Account"
@@ -68,7 +67,9 @@ export default function ChatHeader({
             <h1 className="truncate text-base font-semibold">
               {conversation.name}
             </h1>
-            {conversation.group && <Sprout className="size-4 text-primary" />}
+            {conversation.type === "group" && (
+              <Sprout className="size-4 text-primary" />
+            )}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {conversation.members
@@ -78,26 +79,6 @@ export default function ChatHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <div className="hidden overflow-hidden rounded-xl border sm:flex">
-          <IconTooltip label="Start voice call">
-            <button
-              type="button"
-              aria-label="Start voice call"
-              className="flex size-11 items-center justify-center transition hover:bg-muted"
-            >
-              <Phone className="size-[18px]" />
-            </button>
-          </IconTooltip>
-          <IconTooltip label="Start video call">
-            <button
-              type="button"
-              aria-label="Start video call"
-              className="flex size-11 items-center justify-center border-l transition hover:bg-muted"
-            >
-              <Video className="size-[18px]" />
-            </button>
-          </IconTooltip>
-        </div>
         <IconTooltip
           label={`${isInfoPanelOpen ? "Close" : "Open"} conversation details`}
         >
@@ -144,15 +125,6 @@ export default function ChatHeader({
                 </span>
               </DropdownMenuLabel>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="h-10 px-2.5">
-              <CircleUserRound className="size-4" />
-              View profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="h-10 px-2.5">
-              <Settings className="size-4" />
-              Settings
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"

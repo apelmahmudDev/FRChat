@@ -4,7 +4,6 @@ import { useState } from "react"
 import Link from "next/link"
 
 import {
-  Building2,
   Check,
   MessageCircleMore,
   MessageSquarePlus,
@@ -24,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { IconTooltip } from "@/components/ui/icon-tooltip"
-import type { Conversation } from "@/features/messages/data/conversations"
+import type { Conversation } from "@/features/conversations/types/conversation.types"
 
 import NewConversationDialog from "./new-conversation-dialog"
 import NewGroupDialog from "./new-group-dialog"
@@ -37,7 +36,7 @@ const avatarColors = [
   "bg-orange-100 text-orange-700",
 ]
 
-const filters = ["All", "Unread", "Direct", "Groups"] as const
+const filters = ["All", "Direct", "Groups"] as const
 
 type ConversationFilter = (typeof filters)[number]
 
@@ -60,9 +59,8 @@ export default function ConversationList({
   const filteredConversations = conversations.filter((conversation) => {
     const matchesFilter =
       activeFilter === "All" ||
-      (activeFilter === "Unread" && Boolean(conversation.unread)) ||
-      (activeFilter === "Groups" && Boolean(conversation.group)) ||
-      (activeFilter === "Direct" && !conversation.group)
+      (activeFilter === "Groups" && conversation.type === "group") ||
+      (activeFilter === "Direct" && conversation.type === "direct")
     const matchesSearch =
       normalizedSearchTerm.length === 0 ||
       conversation.name.toLowerCase().includes(normalizedSearchTerm) ||
@@ -185,15 +183,10 @@ export default function ConversationList({
               <span
                 className={`relative flex size-11 shrink-0 items-center justify-center rounded-full text-xs font-bold ${avatarColors[index % avatarColors.length]}`}
               >
-                {conversation.group ? (
+                {conversation.type === "group" ? (
                   <Users className="size-5" />
-                ) : conversation.company ? (
-                  <Building2 className="size-5" />
                 ) : (
                   conversation.initials
-                )}
-                {index < 2 && (
-                  <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-emerald-500" />
                 )}
               </span>
               <span className="min-w-0 flex-1">
@@ -201,7 +194,7 @@ export default function ConversationList({
                   <span className="truncate text-sm font-semibold">
                     {conversation.name}
                   </span>
-                  {conversation.group && (
+                  {conversation.type === "group" && (
                     <Sprout className="size-3.5 shrink-0 text-primary" />
                   )}
                   <span className="ml-auto shrink-0 text-[11px] font-normal text-muted-foreground">
@@ -212,11 +205,6 @@ export default function ConversationList({
                   <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                     {conversation.preview}
                   </span>
-                  {conversation.unread && (
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-semibold text-primary">
-                      {conversation.unread}
-                    </span>
-                  )}
                 </span>
               </span>
             </Link>

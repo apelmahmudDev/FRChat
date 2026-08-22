@@ -35,6 +35,7 @@ export default function SignInForm({
     mutationKey: [...authKeys.all, "login"],
     mutationFn: login,
     onSuccess: (session) => {
+      queryClient.removeQueries()
       queryClient.setQueryData(authKeys.session(), session)
       toast.add({
         title: "Welcome to FRChat",

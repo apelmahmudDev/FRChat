@@ -2,6 +2,11 @@ import { cookies } from "next/headers"
 import { z } from "zod"
 
 import { AUTH_COOKIE_NAME } from "@/features/auth/lib/auth-cookie"
+import { userMatchesSearch } from "@/features/users/lib/user-search"
+import {
+  type ChatUser,
+  chatUserSchema,
+} from "@/features/users/types/user.types"
 import { normalizeApiError } from "@/lib/api/error"
 import { upstreamRequest } from "@/lib/api/server"
 
@@ -9,13 +14,19 @@ const searchSchema = z.object({
   q: z.string().trim().min(1).max(100),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 })
-const userSchema = z
-  .object({
-    _id: z.string().min(1),
-    name: z.string().min(1),
-    phone: z.string().min(1),
+const usersSchema = z.array(chatUserSchema)
+const upstreamUsersSchema = z
+  .union([
+    usersSchema,
+    z.object({ data: usersSchema }).loose(),
+    z.object({ users: usersSchema }).loose(),
+    z.object({ data: z.object({ users: usersSchema }).loose() }).loose(),
+  ])
+  .transform((response): ChatUser[] => {
+    if (Array.isArray(response)) return response
+    if ("users" in response) return usersSchema.parse(response.users)
+    return Array.isArray(response.data) ? response.data : response.data.users
   })
-  .loose()
 
 export async function GET(request: Request) {
   const query = searchSchema.safeParse(
@@ -55,26 +66,18 @@ export async function GET(request: Request) {
       )
     }
 
-    const parsed = z
-      .object({
-        data: z.array(userSchema).optional(),
-        users: z.array(userSchema).optional(),
-      })
-      .loose()
-      .safeParse(body)
-    const users = parsed.success
-      ? (parsed.data.data ?? parsed.data.users)
-      : undefined
-
-    if (!users) {
-      console.error("Invalid GET /users/search response", parsed.error)
+    const users = upstreamUsersSchema.safeParse(body)
+    if (!users.success) {
+      console.error("Invalid GET /users/search response", users.error)
       return Response.json(
         { message: "The users service returned an invalid response." },
         { status: 502 }
       )
     }
 
-    return Response.json({ data: users })
+    return Response.json({
+      data: users.data.filter((user) => userMatchesSearch(user, query.data.q)),
+    })
   } catch (error) {
     console.error("Unable to search users", error)
     return Response.json(

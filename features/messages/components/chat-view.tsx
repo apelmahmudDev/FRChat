@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useQuery } from "@tanstack/react-query"
 import { MessageCircleMore } from "lucide-react"
 
-import type { Conversation } from "@/features/messages/data/conversations"
+import { conversationListQueryOptions } from "@/features/conversations/api/conversations.queries"
+import type { Conversation } from "@/features/conversations/types/conversation.types"
 
 import ChatHeader from "./chat-header"
 import ConversationList from "./conversation-list"
@@ -13,18 +15,28 @@ import MessageInput from "./message-input"
 import MessageList from "./message-list"
 
 type ChatViewProps = {
-  conversations: readonly Conversation[]
-  conversation: Conversation | null
-  variant?: "empty" | "not-found"
+  initialConversations: Conversation[]
+  selectedConversationId?: string
 }
 
 export default function ChatView({
-  conversations,
-  conversation,
-  variant = "empty",
+  initialConversations,
+  selectedConversationId,
 }: ChatViewProps) {
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(true)
+  const { data: conversations } = useQuery(
+    conversationListQueryOptions(initialConversations)
+  )
+  const conversation = selectedConversationId
+    ? (conversations.find(({ id }) => id === selectedConversationId) ?? null)
+    : null
   const latestConversation = conversations[0]
+  const variant =
+    conversations.length === 0
+      ? "empty"
+      : selectedConversationId
+        ? "not-found"
+        : "empty"
   const emptyStateTitle =
     variant === "not-found" ? "Conversation not found" : "No conversations yet"
   const emptyStateDescription =

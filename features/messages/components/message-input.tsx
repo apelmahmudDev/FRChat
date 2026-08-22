@@ -1,14 +1,6 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {
-  AtSign,
-  LoaderCircle,
-  Mic,
-  Paperclip,
-  Plus,
-  Send,
-  Smile,
-} from "lucide-react"
+import { LoaderCircle, Send } from "lucide-react"
 
 import { IconTooltip } from "@/components/ui/icon-tooltip"
 import { toast } from "@/components/ui/toast"
@@ -16,23 +8,14 @@ import { sendMessage } from "@/features/messages/api/messages.api"
 import { currentSessionQueryOptions } from "@/features/auth/api/auth.queries"
 import { conversationKeys } from "@/features/conversations/api/conversations.keys"
 import { messageKeys } from "@/features/messages/api/messages.keys"
-import type { ChatMessage } from "@/features/messages/types/message.types"
-
-const iconButtonClass =
-  "flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+import type {
+  ChatMessage,
+  MessageHistory,
+} from "@/features/messages/types/message.types"
 
 type MessageInputProps = {
   conversationId: string
   conversationName: string
-}
-
-type MessageHistory = {
-  pages: Array<{
-    data: ChatMessage[]
-    nextCursor: string | null
-    hasMore: boolean
-  }>
-  pageParams: unknown[]
 }
 
 export default function MessageInput({
@@ -100,6 +83,11 @@ export default function MessageInput({
           messageKeys.list(conversationId),
           context.previousHistory
         )
+      } else {
+        queryClient.removeQueries({
+          queryKey: messageKeys.list(conversationId),
+          exact: true,
+        })
       }
       toast.add({
         title: "Message not sent",
@@ -129,81 +117,31 @@ export default function MessageInput({
           rows={2}
           value={text}
           onChange={(event) => setText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault()
+              event.currentTarget.form?.requestSubmit()
+            }
+          }}
           disabled={sendMutation.isPending}
           placeholder={`Message ${conversationName}`}
           className="max-h-32 min-h-12 w-full resize-none bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted-foreground"
         />
-        <div className="flex items-center gap-0.5">
-          <IconTooltip label="Add attachment" side="top">
+        <div className="flex justify-end">
+          <IconTooltip label="Send message" side="top">
             <button
-              type="button"
-              aria-label="Add attachment"
-              className={iconButtonClass}
+              type="submit"
+              aria-label="Send message"
+              disabled={sendMutation.isPending || text.trim().length === 0}
+              className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:opacity-90"
             >
-              <Plus className="size-5" />
+              {sendMutation.isPending ? (
+                <LoaderCircle className="size-[18px] animate-spin" />
+              ) : (
+                <Send className="size-[18px]" />
+              )}
             </button>
           </IconTooltip>
-          <IconTooltip label="Format message" side="top">
-            <button
-              type="button"
-              aria-label="Format message"
-              className={`${iconButtonClass} text-sm font-medium`}
-            >
-              Aa
-            </button>
-          </IconTooltip>
-          <IconTooltip label="Choose emoji" side="top">
-            <button
-              type="button"
-              aria-label="Add emoji"
-              className={iconButtonClass}
-            >
-              <Smile className="size-[18px]" />
-            </button>
-          </IconTooltip>
-          <IconTooltip label="Mention someone" side="top">
-            <button
-              type="button"
-              aria-label="Mention someone"
-              className={iconButtonClass}
-            >
-              <AtSign className="size-[18px]" />
-            </button>
-          </IconTooltip>
-          <IconTooltip label="Attach file" side="top">
-            <button
-              type="button"
-              aria-label="Attach file"
-              className={iconButtonClass}
-            >
-              <Paperclip className="size-[18px]" />
-            </button>
-          </IconTooltip>
-          <div className="ml-auto flex items-center gap-2">
-            <IconTooltip label="Record voice message" side="top">
-              <button
-                type="button"
-                aria-label="Record voice message"
-                className={iconButtonClass}
-              >
-                <Mic className="size-[18px]" />
-              </button>
-            </IconTooltip>
-            <IconTooltip label="Send message" side="top">
-              <button
-                type="submit"
-                aria-label="Send message"
-                disabled={sendMutation.isPending || text.trim().length === 0}
-                className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:opacity-90"
-              >
-                {sendMutation.isPending ? (
-                  <LoaderCircle className="size-[18px] animate-spin" />
-                ) : (
-                  <Send className="size-[18px]" />
-                )}
-              </button>
-            </IconTooltip>
-          </div>
         </div>
       </form>
     </footer>

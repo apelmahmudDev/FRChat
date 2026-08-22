@@ -12,5 +12,5 @@ export function searchUsers(query: string) {
   return clientApiRequest(`/api/users/search?${search}` as `/api/${string}`, {
     method: "GET",
     schema: userSearchResponseSchema,
-  })
+  }).then(({ data }) => data)
 }

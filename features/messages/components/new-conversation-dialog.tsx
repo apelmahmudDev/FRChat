@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { LoaderCircle, MessageSquarePlus, X } from "lucide-react"
 
 import { toast } from "@/components/ui/toast"
 import { createConversation } from "@/features/conversations/api/conversations.api"
 import { conversationKeys } from "@/features/conversations/api/conversations.keys"
-import { userSearchQueryOptions } from "@/features/users/api/users.queries"
+import { UserSearchPicker } from "@/features/users/components/user-search-picker"
+import type { ChatUser } from "@/features/users/types/user.types"
 
 type NewConversationDialogProps = {
   open: boolean
@@ -21,16 +22,16 @@ export default function NewConversationDialog({
 }: NewConversationDialogProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [userId, setUserId] = useState("")
+  const [selectedUsers, setSelectedUsers] = useState<ChatUser[]>([])
   const [error, setError] = useState<string | null>(null)
-  const userSearch = useQuery(userSearchQueryOptions(userId.trim()))
+  const selectedUser = selectedUsers[0]
 
   const mutation = useMutation({
     mutationFn: (userId: string) => createConversation({ userId }),
     onSuccess: async (conversation) => {
       await queryClient.invalidateQueries({ queryKey: conversationKeys.all })
       onOpenChange(false)
-      setUserId("")
+      setSelectedUsers([])
       setError(null)
       toast.add({ title: "Conversation started", type: "success" })
       router.push(`/messages/${conversation._id}`)
@@ -44,22 +45,22 @@ export default function NewConversationDialog({
 
   function close() {
     if (!mutation.isPending) {
+      setSelectedUsers([])
       setError(null)
+      mutation.reset()
       onOpenChange(false)
     }
   }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const normalizedUserId = userId.trim()
-
-    if (!normalizedUserId) {
-      setError("Enter the user ID of the person you want to message.")
+    if (!selectedUser) {
+      setError("Choose a person from the search results first.")
       return
     }
 
     setError(null)
-    mutation.mutate(normalizedUserId)
+    mutation.mutate(selectedUser._id)
   }
 
   return (
@@ -101,23 +102,14 @@ export default function NewConversationDialog({
 
         <form className="mt-6 space-y-4" noValidate onSubmit={submit}>
           <div>
-            <label
-              htmlFor="new-conversation-user-id"
-              className="text-sm font-medium"
-            >
-              Find a person
-            </label>
-            <input
+            <UserSearchPicker
               id="new-conversation-user-id"
-              value={userId}
-              onChange={(event) => setUserId(event.target.value)}
-              autoFocus
-              autoComplete="off"
-              aria-invalid={Boolean(error)}
-              aria-describedby={error ? "new-conversation-error" : undefined}
+              selectedUsers={selectedUsers}
+              onSelectionChange={(users) => {
+                setSelectedUsers(users)
+                setError(null)
+              }}
               disabled={mutation.isPending}
-              placeholder="Name, phone, or user ID"
-              className="mt-2 h-10 w-full rounded-lg border bg-background px-3 font-mono text-sm transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             />
             {error && (
               <p
@@ -126,32 +118,6 @@ export default function NewConversationDialog({
               >
                 {error}
               </p>
-            )}
-            {userSearch.isError && (
-              <p className="mt-2 text-sm text-destructive">
-                {userSearch.error.message}
-              </p>
-            )}
-            {userSearch.data && userSearch.data.data.length > 0 && (
-              <ul className="mt-2 max-h-40 overflow-y-auto rounded-lg border bg-background p-1">
-                {userSearch.data.data.map((user) => (
-                  <li key={user._id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUserId(user._id)
-                        setError(null)
-                      }}
-                      className="flex w-full flex-col rounded-md px-3 py-2 text-left transition hover:bg-muted"
-                    >
-                      <span className="text-sm font-medium">{user.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {user.phone}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
             )}
           </div>
           <div className="flex justify-end gap-2">
@@ -165,7 +131,7 @@ export default function NewConversationDialog({
             </button>
             <button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={mutation.isPending || !selectedUser}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
             >
               {mutation.isPending && (
