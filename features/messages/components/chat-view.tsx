@@ -26,9 +26,7 @@ export default function ChatView({
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(true)
   const latestConversation = conversations[0]
   const emptyStateTitle =
-    variant === "not-found"
-      ? "Conversation not found"
-      : "No conversations yet"
+    variant === "not-found" ? "Conversation not found" : "No conversations yet"
   const emptyStateDescription =
     variant === "not-found"
       ? "That conversation may have been removed or you might not have access to it."
@@ -87,8 +85,11 @@ export default function ChatView({
             isInfoPanelOpen={isInfoPanelOpen}
             onInfoPanelToggle={() => setIsInfoPanelOpen((isOpen) => !isOpen)}
           />
-          <MessageList />
-          <MessageInput conversationName={conversation.name} />
+          <MessageList conversation={conversation} />
+          <MessageInput
+            conversationId={conversation.id}
+            conversationName={conversation.name}
+          />
         </section>
         {isInfoPanelOpen && (
           <InfoPanel

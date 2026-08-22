@@ -26,6 +26,8 @@ import {
 import { IconTooltip } from "@/components/ui/icon-tooltip"
 import type { Conversation } from "@/features/messages/data/conversations"
 
+import NewConversationDialog from "./new-conversation-dialog"
+import NewGroupDialog from "./new-group-dialog"
 const avatarColors = [
   "bg-emerald-100 text-emerald-800",
   "bg-rose-100 text-rose-700",
@@ -50,6 +52,8 @@ export default function ConversationList({
 }: ConversationListProps) {
   const [activeFilter, setActiveFilter] = useState<ConversationFilter>("All")
   const [searchTerm, setSearchTerm] = useState("")
+  const [isNewConversationOpen, setIsNewConversationOpen] = useState(false)
+  const [isNewGroupOpen, setIsNewGroupOpen] = useState(false)
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase()
 
@@ -122,9 +126,19 @@ export default function ConversationList({
                 ))}
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="h-9 px-2.5 text-primary">
+              <DropdownMenuItem
+                onClick={() => setIsNewConversationOpen(true)}
+                className="h-9 px-2.5 text-primary"
+              >
                 <MessageSquarePlus className="size-4" />
                 New conversation
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setIsNewGroupOpen(true)}
+                className="h-9 px-2.5 text-primary"
+              >
+                <Users className="size-4" />
+                New group
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -231,6 +245,11 @@ export default function ConversationList({
           </div>
         )}
       </div>
+      <NewConversationDialog
+        open={isNewConversationOpen}
+        onOpenChange={setIsNewConversationOpen}
+      />
+      <NewGroupDialog open={isNewGroupOpen} onOpenChange={setIsNewGroupOpen} />
     </aside>
   )
 }

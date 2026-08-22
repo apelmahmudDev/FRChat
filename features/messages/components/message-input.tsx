@@ -1,24 +1,126 @@
-import { AtSign, Mic, Paperclip, Plus, Send, Smile } from "lucide-react"
+import { useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  AtSign,
+  LoaderCircle,
+  Mic,
+  Paperclip,
+  Plus,
+  Send,
+  Smile,
+} from "lucide-react"
 
 import { IconTooltip } from "@/components/ui/icon-tooltip"
+import { toast } from "@/components/ui/toast"
+import { sendMessage } from "@/features/messages/api/messaging"
+import { currentSessionQueryOptions } from "@/features/auth/api/auth"
+import type { ChatMessage } from "@/features/messages/api/messages"
+import {
+  conversationKeys,
+  messageKeys,
+} from "@/features/messages/api/query-keys"
 
 const iconButtonClass =
   "flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
 
 type MessageInputProps = {
+  conversationId: string
   conversationName: string
 }
 
-export default function MessageInput({ conversationName }: MessageInputProps) {
+export default function MessageInput({
+  conversationId,
+  conversationName,
+}: MessageInputProps) {
+  const [text, setText] = useState("")
+  const queryClient = useQueryClient()
+  const sessionQuery = useQuery(currentSessionQueryOptions())
+  const sendMutation = useMutation({
+    mutationFn: ({ text }: { text: string }) =>
+      sendMessage(conversationId, text),
+    onMutate: async ({ text }) => {
+      await queryClient.cancelQueries({
+        queryKey: messageKeys.list(conversationId),
+      })
+
+      const queryKey = messageKeys.list(conversationId)
+      const previousHistory = queryClient.getQueryData(queryKey)
+      const optimisticMessage: ChatMessage = {
+        _id: `optimistic-${crypto.randomUUID()}`,
+        sender: sessionQuery.data?.user._id ?? "pending-user",
+        text,
+        createdAt: new Date().toISOString(),
+      }
+
+      queryClient.setQueryData<{
+        pages: Array<{
+          data: ChatMessage[]
+          nextCursor: string | null
+          hasMore: boolean
+        }>
+        pageParams: unknown[]
+      }>(queryKey, (history) => {
+        if (!history) {
+          return {
+            pages: [
+              { data: [optimisticMessage], nextCursor: null, hasMore: false },
+            ],
+            pageParams: [undefined],
+          }
+        }
+
+        return {
+          ...history,
+          pages: history.pages.map((page, index) =>
+            index === 0
+              ? { ...page, data: [optimisticMessage, ...page.data] }
+              : page
+          ),
+        }
+      })
+
+      return { previousHistory }
+    },
+    onSuccess: () => {
+      setText("")
+      void queryClient.invalidateQueries({ queryKey: conversationKeys.all })
+    },
+    onError: (error: Error, _variables, context) => {
+      if (context?.previousHistory) {
+        queryClient.setQueryData(
+          messageKeys.list(conversationId),
+          context.previousHistory
+        )
+      }
+      toast.add({
+        title: "Message not sent",
+        description: error.message,
+        type: "error",
+      })
+    },
+  })
+
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const message = text.trim()
+    if (message) sendMutation.mutate({ text: message })
+  }
+
   return (
     <footer className="shrink-0 bg-background px-4 pb-4 sm:px-7 sm:pb-6">
-      <div className="mx-auto max-w-3xl rounded-2xl border bg-card p-3 shadow-xs focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10">
+      <form
+        onSubmit={submit}
+        className="mx-auto max-w-3xl rounded-2xl border bg-card p-3 shadow-xs focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10"
+      >
         <label htmlFor="message" className="sr-only">
           Message {conversationName}
         </label>
         <textarea
           id="message"
           rows={2}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          disabled={sendMutation.isPending}
           placeholder={`Message ${conversationName}`}
           className="max-h-32 min-h-12 w-full resize-none bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted-foreground"
         />
@@ -80,16 +182,21 @@ export default function MessageInput({ conversationName }: MessageInputProps) {
             </IconTooltip>
             <IconTooltip label="Send message" side="top">
               <button
-                type="button"
+                type="submit"
                 aria-label="Send message"
+                disabled={sendMutation.isPending || text.trim().length === 0}
                 className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:opacity-90"
               >
-                <Send className="size-[18px]" />
+                {sendMutation.isPending ? (
+                  <LoaderCircle className="size-[18px] animate-spin" />
+                ) : (
+                  <Send className="size-[18px]" />
+                )}
               </button>
             </IconTooltip>
           </div>
         </div>
-      </div>
+      </form>
     </footer>
   )
 }

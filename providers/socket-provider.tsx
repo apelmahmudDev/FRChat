@@ -9,6 +9,7 @@ import {
   conversationKeys,
   messageKeys,
 } from "@/features/messages/api/query-keys"
+import type { ChatMessage } from "@/features/messages/api/messages"
 import {
   socketConversationEventSchema,
   socketMessageEventSchema,
@@ -46,7 +47,7 @@ export function SocketProvider({ children }: React.PropsWithChildren) {
 
       activeSocket = io(clientEnv.NEXT_PUBLIC_CHAT_SOCKET_URL, {
         auth: { token },
-        transports: ["websocket"],
+        transports: ["websocket", "polling"],
         reconnection: true,
       })
 
@@ -56,10 +57,58 @@ export function SocketProvider({ children }: React.PropsWithChildren) {
         void queryClient.invalidateQueries({ queryKey: conversationKeys.all })
 
         if (parsedMessage.success) {
-          void queryClient.invalidateQueries({
-            queryKey: messageKeys.list(parsedMessage.data.conversationId),
-          })
+          const message = parsedMessage.data
+          const text = message.text ?? message.content
+
+          if (
+            message._id &&
+            message.sender &&
+            text !== undefined &&
+            message.createdAt
+          ) {
+            queryClient.setQueryData<{
+              pages: Array<{
+                data: ChatMessage[]
+                nextCursor: string | null
+                hasMore: boolean
+              }>
+              pageParams: unknown[]
+            }>(messageKeys.list(message.conversationId), (history) => {
+              if (!history) return history
+
+              const receivedMessage: ChatMessage = {
+                _id: message._id!,
+                sender: message.sender!,
+                text,
+                createdAt: message.createdAt!,
+              }
+              const exists = history.pages.some((page) =>
+                page.data.some(
+                  (cachedMessage) => cachedMessage._id === message._id
+                )
+              )
+
+              if (exists) return history
+
+              return {
+                ...history,
+                pages: history.pages.map((page, index) =>
+                  index === 0
+                    ? { ...page, data: [receivedMessage, ...page.data] }
+                    : page
+                ),
+              }
+            })
+          } else {
+            void queryClient.invalidateQueries({
+              queryKey: messageKeys.list(message.conversationId),
+            })
+          }
         }
+      })
+
+      activeSocket.on("connect_error", (error) => {
+        console.error("Chat socket connection failed", error.message)
       })
 
       activeSocket.on("conversation:updated", (payload) => {
@@ -79,7 +128,9 @@ export function SocketProvider({ children }: React.PropsWithChildren) {
         }
       })
 
-      setSocket(activeSocket)
+      activeSocket.on("connect", () => {
+        if (active) setSocket(activeSocket)
+      })
     }
 
     void connect().catch((error: unknown) => {
